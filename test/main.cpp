@@ -10,9 +10,8 @@
 namespace easypr {
 
 namespace demo {
-
 // interactions
-
+//批量测试函数
 int accuracyTestMain() {
   std::shared_ptr<easypr::Kv> kv(new easypr::Kv);
   kv->load("etc/chinese_mapping");
@@ -51,6 +50,7 @@ int accuracyTestMain() {
   }
   return 0;
 }
+
 //测试函数，可以进行一系列测试，车牌检测，字符识别等等
 int testMain() 
 {
@@ -83,24 +83,29 @@ int testMain()
           assert(test_plate_detect() == 0);
           break;
         case 4:
+			//将车牌中的每个字符分割出来并显示
           assert(test_chars_segment() == 0);
           break;
         case 5:
-          assert(test_chars_identify() == 0);
+			//将车牌区域内的字符都检测并显示出来,和正确字符做对比是否正确
+			assert(test_chars_identify() == 0);
           break;
         case 6:
+			//将车牌区域中所有车牌字符检测并显示出来
           assert(test_chars_recognise() == 0);
           break;
         case 7:
+			//车牌检测函数，输入一副包含车牌的图像，在图像中将检测到的车牌区域划线表示
           assert(test_plate_recognize() == 0);
           break;
         case 8:
+			//执行上面所有步骤
           assert(test_plate_locate() == 0);
           assert(test_plate_judge() == 0);
           assert(test_plate_detect() == 0);
 
           assert(test_chars_segment() == 0);
-          assert(test_chars_identify() == 0);
+		  assert(test_chars_identify() == 0);
           assert(test_chars_recognise() == 0);
 
           assert(test_plate_recognize() == 0);
@@ -123,6 +128,7 @@ int testMain()
 
 }  // namespace easypr
 
+//处理命令行信息
 void command_line_handler(int argc, const char* argv[]) {
   program_options::Generator options;
 
@@ -355,6 +361,7 @@ void command_line_handler(int argc, const char* argv[]) {
       });
 }
 
+//主函数
 int main(int argc, const char* argv[]) {
   std::shared_ptr<easypr::Kv> kv(new easypr::Kv);//智能指针kv，指向easypr::Kv类
   kv->load("etc/chinese_mapping");//加载此文件中内容到kv类的成员变量vector类型的data_中

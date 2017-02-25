@@ -215,7 +215,7 @@ int CPlateRecognize::plateRecognize(Mat src, std::vector<CPlate> &plateVecOut, i
   
   return resultPD;
 }
-
+//输入一张包含车牌的图像，检测出哪些区域为车牌
 int CPlateRecognize::plateRecognize(Mat src, std::vector<CPlate> &plateVecOut, int img_index) {
 
   std::vector<CPlate> plateVec;
@@ -315,6 +315,7 @@ void CPlateRecognize::LoadChineseANN(std::string path) {
   CharsIdentify::instance()->LoadChineseModel(path);
 }
 
+//输入一张包含车牌的图像
 int CPlateRecognize::plateRecognize(Mat src, std::vector<std::string> &licenseVec) {
 
   std::vector<CPlate> plateVec;

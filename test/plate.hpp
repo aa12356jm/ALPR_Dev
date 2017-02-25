@@ -40,7 +40,6 @@ int test_plate_locate()
   return result;
 }
 
-
 //首先是使用车牌定位函数检测出图像中可能为车牌的多个区域，将这些区域输入到svm中判断是否为车牌
 //首先显示车牌定位的结果图像，然后显示经svm判断为车牌的图像
 int test_plate_judge() {
@@ -87,7 +86,6 @@ int test_plate_judge() {
   return resultJu;
 }
 
-
 //
 int test_plate_detect() {
   cout << "test_plate_detect" << endl;
@@ -116,19 +114,18 @@ int test_plate_detect() {
 
 int test_plate_recognize() {
   cout << "test_plate_recognize" << endl;
-
   Mat src = imread("resources/image/test.jpg");
-
   CPlateRecognize pr;
-  pr.setLifemode(true);
-  pr.setDebug(false);
-  pr.setMaxPlates(4);
+  pr.setLifemode(true);//生活模式
+  pr.setDebug(false);//调试模式
+  pr.setMaxPlates(4);//可检测最大车牌数量
   //pr.setDetectType(PR_DETECT_COLOR | PR_DETECT_SOBEL);
-  pr.setDetectType(easypr::PR_DETECT_CMSER);
+  pr.setDetectType(easypr::PR_DETECT_CMSER);//设置为字符检测模式
 
   //vector<string> plateVec;
   vector<CPlate> plateVec;
 
+  //从图片中识别出哪些区域可能为车牌区域？
   int result = pr.plateRecognize(src, plateVec);
   //int result = pr.plateRecognizeAsText(src, plateVec);
   if (result == 0) {

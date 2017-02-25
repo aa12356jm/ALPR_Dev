@@ -116,7 +116,7 @@ namespace easypr {
     return 0;
   }
 
-  //车牌检测函数
+  //车牌检测函数，输入一副包含车牌的图像，在图像中将检测到的车牌区域划线表示
   int CPlateDetect::plateDetect(Mat src, std::vector<CPlate> &resultVec, int img_index) 
   {
 	//再调用另外一个函数，多一个bool参数，可以选择是否显示：使用不同定位方法定位出的车牌

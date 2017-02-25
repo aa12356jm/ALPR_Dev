@@ -108,7 +108,7 @@ class CPlateDetect {
 
  private:
 
-  int m_maxPlates;
+  int m_maxPlates;//可检测的最大车牌数量
 
   CPlateLocate* m_plateLocate;
 
