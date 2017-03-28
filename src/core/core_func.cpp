@@ -671,18 +671,22 @@ float countOfBigValue(Mat &mat, int iValue) {
 
 Mat ProjectedHistogram(Mat img, int t) {
   int sz = (t) ? img.rows : img.cols;
-  Mat mhist = Mat::zeros(1, sz, CV_32F);
+  Mat mhist = Mat::zeros(1, sz, CV_32F);//向量，存储行或列的数据
 
   for (int j = 0; j < sz; j++) {
     Mat data = (t) ? img.row(j) : img.col(j);
-
+	//得到每行或者每列像素点值大于20的个数
     mhist.at<float>(j) = countOfBigValue(data, 20);
   }
 
   // Normalize histogram
+  //找到矩阵或者向量mhist中的最小值和最大值
   double min, max;
   minMaxLoc(mhist, &min, &max);
 
+  //convertTo转换矩阵，-1表示目的矩阵和源矩阵类型一致
+  //参数1:目标矩阵，参数2:目标矩阵类型，参数3:变化尺度值，参数4:尺度上的加权值
+  //对矩阵的所有像素值进行归一化处理到范围0-1
   if (max > 0)
     mhist.convertTo(mhist, -1, 1.0f / max, 0);
 

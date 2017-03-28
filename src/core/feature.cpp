@@ -1,23 +1,26 @@
-#include "easypr/core/feature.h"
+﻿#include "easypr/core/feature.h"
 #include "easypr/core/core_func.h"
 #include "../thirdparty/LBP/lbp.hpp"
 
 namespace easypr {
-
 
 Mat getHistogram(Mat in) {
   const int VERTICAL = 0;
   const int HORIZONTAL = 1;
 
   // Histogram features
+  //此向量存储每列的像素点大于20的个数
   Mat vhist = ProjectedHistogram(in, VERTICAL);
+  //此向量存储每行的像素点大于20的个数
   Mat hhist = ProjectedHistogram(in, HORIZONTAL);
 
-  // Last 10 is the number of moments components
+ //Last 10 is the number of moments components
   int numCols = vhist.cols + hhist.cols;
-
+  
+  //创建一个向量
   Mat out = Mat::zeros(1, numCols, CV_32F);
 
+  //将所有的行和列中的像素值大于20的个数保存到out中，得到直方图
   int j = 0;
   for (int i = 0; i < vhist.cols; i++) {
     out.at<float>(j) = vhist.at<float>(i);
@@ -40,7 +43,7 @@ void getHistogramFeatures(const Mat& image, Mat& features) {
   Mat img_threshold;
   threshold(grayImage, img_threshold, 0, 255,
             CV_THRESH_OTSU + CV_THRESH_BINARY);
-  features = getHistogram(img_threshold);
+  features = getHistogram(img_threshold);//提取特征(直方图)
 }
 
 
@@ -216,7 +219,7 @@ void getLBPplusHistFeatures(const Mat& image, Mat& features) {
   Mat img_threshold;
   threshold(greyImage, img_threshold, 0, 255,
     CV_THRESH_OTSU + CV_THRESH_BINARY);
-  Mat histomFeatures = getHistogram(img_threshold);
+  Mat histomFeatures = getHistogram(img_threshold);//提取特征(直方图)
 
   /*Mat img_threshold2;
   threshold(bgrSplit[1], img_threshold2, 0, 255,

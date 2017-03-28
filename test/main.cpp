@@ -55,7 +55,7 @@ int accuracyTestMain() {
 int testMain() 
 {
   std::shared_ptr<easypr::Kv> kv(new easypr::Kv);
-  //记载文件中的内容，以键值对的形式保存
+  //加载文件中的内容，以键值对的形式保存
   kv->load("etc/chinese_mapping");
 
   bool isExit = false;

@@ -75,7 +75,7 @@ void Kv::add(const std::string &key, const std::string &value)
     data_[key] = v;
   }
 }
-
+//将此key移除掉
 void Kv::remove(const std::string &key) {
   if (data_.find(key) == data_.end()) {
     std::cerr << "[Kv] cannot find " << key << std::endl;
@@ -84,6 +84,7 @@ void Kv::remove(const std::string &key) {
   data_.erase(key);
 }
 
+//清空map内容
 void Kv::clear() {
   data_.clear();
 }
