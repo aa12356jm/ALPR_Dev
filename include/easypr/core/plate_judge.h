@@ -1,7 +1,6 @@
 #ifndef EASYPR_CORE_PLATEJUDGE_H_
 #define EASYPR_CORE_PLATEJUDGE_H_
 
-#include  <opencv2/ml.hpp>
 #include "easypr/core/plate.hpp"
 #include "easypr/core/feature.h"
 
@@ -13,23 +12,23 @@ class PlateJudge {
 
   void LoadModel(std::string path);
 
-  //ÊäÈë¶à·ùCPlateÍ¼Ïñ£¬Êä³ö¶à¸öÊÇ·ñÎª³µÅÆµÄ½á¹û
+  //$)AJdHk6`7yCPlateM<Oq#,Jd3v6`8vJG7qN*35EF5D=a9{
   int plateJudge(const std::vector<CPlate> &, std::vector<CPlate> &);
 
-  //Ê¹ÓÃnmsÅĞ¶ÏÊäÈëµÄ¶à¸öÍ¼ÏñÊÇ·ñÎª³µÅÆ
+  //$)AJ9SCnmsEP6OJdHk5D6`8vM<OqJG7qN*35EF
   int plateJudgeUsingNMS(const std::vector<CPlate> &, std::vector<CPlate> &, int maxPlates = 5);
 
-  //ÊäÈë¶à·ùmatÍ¼Ïñ£¬Êä³ö¶à¸öÊÇ·ñÎª³µÅÆµÄ½á¹û
+  //$)AJdHk6`7ymatM<Oq#,Jd3v6`8vJG7qN*35EF5D=a9{
   int plateJudge(const std::vector<Mat> &, std::vector<Mat> &);
 
-  //ÊäÈëÒ»¸öÍ¼Ïñ£¬Êä³öÒ»¸öÊÇ·ñÎª³µÅÆµÄ½á¹û
+  //$)AJdHkR;8vM<Oq#,Jd3vR;8vJG7qN*35EF5D=a9{
   int plateJudge(const Mat &inMat, int &result);
   int plateSetScore(CPlate& plate);
 
  private:
   PlateJudge();
 
-  static PlateJudge* instance_;//¾²Ì¬Ö¸Õë
+  static PlateJudge* instance_;//$)A>2L,V8Uk
 
   svmCallback extractFeature;
 
