@@ -96,7 +96,6 @@ Rect adaptive_charrect_from_rect(const Rect& rect, int maxwidth, int maxheight);
 // calc safe rect
 bool calcSafeRect(const RotatedRect& roi_rect, const Mat& src,
   Rect_<float>& safeBoundRect);
-
 bool calcSafeRect(const RotatedRect &roi_rect, const int width, const int height,
   Rect_<float> &safeBoundRect);
 
