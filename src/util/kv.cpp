@@ -5,18 +5,20 @@ namespace easypr {
 
 Kv::Kv() { }
 
-//¼ÓÔØÎÄ¼ş£¬Ò»ĞĞÒ»ĞĞ¶ÁÈ¡ÄÚÈİ£¬½«Ã¿ĞĞÄÚÈİÒÔ¼üÖµ¶ÔĞÎÊ½±£´æµ½data_±äÁ¿ÖĞ
+//$)A<STXND<~#,R;PPR;PP6AH!DZH]#,=+C?PPDZH]RT<|V56TPNJ=1#4f5=data_1dA?VP
 void Kv::load(const std::string &file) 
 {
   this->clear();
   std::ifstream reader(file);
-  while (!reader.eof()) 
-  {
-    std::string line;
-    std::getline(reader, line);
-    if (line.empty()) continue;
+  assert(reader);
 
-	//parseº¯Êı£¬½âÎöÃ¿ĞĞÄÚÈİ
+  if (reader.is_open()) {
+    while (!reader.eof()) {
+      std::string line;
+      std::getline(reader, line);
+      if (line.empty()) continue;
+
+	//parse$)A:/J}#,=bNvC?PPDZH]
     const auto parse = [](const std::string &str) 
 	{
       std::string tmp, key, value;
@@ -43,15 +45,15 @@ void Kv::load(const std::string &file)
       return std::make_pair(key, value);
     };
 
-    auto kv = parse(line);//kvÖĞ±£´æÃ¿ĞĞµÄ¼üÖµ¶Ô
-    this->add(kv.first, kv.second);//½«¼üÖµ¶Ô±£´æµ½data_ÖĞ
+    auto kv = parse(line);//kv$)AVP1#4fC?PP5D<|V56T
+    this->add(kv.first, kv.second);//$)A=+<|V56T1#4f5=data_VP
   }
   reader.close();
 }
-//¸ù¾İÊäÈëµÄ¼üÀ´²éÕÒ¶ÔÓ¦µÄÖµ
+//$)A8y>]JdHk5D<|@42iUR6TS&5DV5
 std::string Kv::get(const std::string &key) 
 {
-	//±éÀúvectorÖ®ºóÃ»ÓĞ·¢ÏÖÕâ¸ö¼üÖµ
+	//$)A1i@zvectorV.:sC;SP7"OVUb8v<|V5
   if (data_.find(key) == data_.end()) 
   {
     std::cerr << "[Kv] cannot find " << key << std::endl;
@@ -59,7 +61,7 @@ std::string Kv::get(const std::string &key)
   }
   return data_.at(key);
 }
-//½«¼üÖµ¶ÔÌí¼Óµ½data_ÖĞ±£´æ
+//$)A=+<|V56TLm<S5=data_VP1#4f
 void Kv::add(const std::string &key, const std::string &value) 
 {
   if (data_.find(key) != data_.end()) 
@@ -75,7 +77,7 @@ void Kv::add(const std::string &key, const std::string &value)
     data_[key] = v;
   }
 }
-//½«´ËkeyÒÆ³ıµô
+//$)A=+4KkeyRF3}5t
 void Kv::remove(const std::string &key) {
   if (data_.find(key) == data_.end()) {
     std::cerr << "[Kv] cannot find " << key << std::endl;
@@ -84,7 +86,7 @@ void Kv::remove(const std::string &key) {
   data_.erase(key);
 }
 
-//Çå¿ÕmapÄÚÈİ
+//$)AGe?UmapDZH]
 void Kv::clear() {
   data_.clear();
 }

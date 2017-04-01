@@ -20,8 +20,7 @@ namespace easypr {
 
   namespace demo {
 
-    int getGroundTruth(map<string, vector<CPlate>>& xmlMap, const char* path) 
-	{
+    int getGroundTruth(map<string, vector<CPlate>>& xmlMap, const char* path) {
 
 #ifdef OS_WINDOWS
       XMLNode::setGlobalOptions(XMLNode::char_encoding_GBK);
@@ -561,10 +560,16 @@ namespace easypr {
           myfile.close();
         }
       }
+      
       return 0;
     }
 
+
+
   }
+
+
+
 }
 
 #endif  // EASYPR_ACCURACY_HPP

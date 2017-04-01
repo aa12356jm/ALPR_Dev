@@ -53,7 +53,7 @@ void SvmTrain::train() {
 
 void SvmTrain::test() {
   // 1.4 bug fix: old 1.4 ver there is no null judge
-  if (NULL == svm_)
+  //if (NULL == svm_)
     svm_ = cv::ml::SVM::load<cv::ml::SVM>(svm_xml_);//加载训练好的模型文件
 
   if (test_file_list_.empty()) {
