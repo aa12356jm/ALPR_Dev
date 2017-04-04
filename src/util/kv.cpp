@@ -5,7 +5,7 @@ namespace easypr {
 
 Kv::Kv() { }
 
-//$)A<STXND<~#,R;PPR;PP6AH!DZH]#,=+C?PPDZH]RT<|V56TPNJ=1#4f5=data_1dA?VP
+//¼ÓÔØÎÄ¼þ£¬Ò»ÐÐÒ»ÐÐ¶ÁÈ¡ÄÚÈÝ£¬½«Ã¿ÐÐÄÚÈÝÒÔ¼üÖµ¶ÔÐÎÊ½±£´æµ½data_±äÁ¿ÖÐ
 void Kv::load(const std::string &file) 
 {
   this->clear();
@@ -13,47 +13,49 @@ void Kv::load(const std::string &file)
   assert(reader);
 
   if (reader.is_open()) {
-    while (!reader.eof()) {
-      std::string line;
-      std::getline(reader, line);
-      if (line.empty()) continue;
-
-	//parse$)A:/J}#,=bNvC?PPDZH]
-    const auto parse = [](const std::string &str) 
-	{
-      std::string tmp, key, value;
-      for (size_t i = 0, len = str.length(); i < len; ++i) 
+	  while (!reader.eof())
 	  {
-        const char ch = str[i];
-        if (ch == ' ')
-		{
-          if (i > 0 && str[i - 1] != ' ' && key.empty()) 
-		  {
-            key = tmp;
-            tmp.clear();
-          }
-        } 
-		else
-		{
-          tmp.push_back(ch);
-        }
-        if (i == len - 1)
-		{
-          value = tmp;
-        }
-      }
-      return std::make_pair(key, value);
-    };
+		  std::string line;
+		  std::getline(reader, line);
+		  if (line.empty()) continue;
 
-    auto kv = parse(line);//kv$)AVP1#4fC?PP5D<|V56T
-    this->add(kv.first, kv.second);//$)A=+<|V56T1#4f5=data_VP
+		  //parseº¯Êý£¬½âÎöÃ¿ÐÐÄÚÈÝ
+		  const auto parse = [](const std::string &str)
+		  {
+			  std::string tmp, key, value;
+			  for (size_t i = 0, len = str.length(); i < len; ++i)
+			  {
+				  const char ch = str[i];
+				  if (ch == ' ')
+				  {
+					  if (i > 0 && str[i - 1] != ' ' && key.empty())
+					  {
+						  key = tmp;
+						  tmp.clear();
+					  }
+				  }
+				  else
+				  {
+					  tmp.push_back(ch);
+				  }
+				  if (i == len - 1)
+				  {
+					  value = tmp;
+				  }
+			  }
+			  return std::make_pair(key, value);
+		  };
+
+		  auto kv = parse(line);//kvÖÐ±£´æÃ¿ÐÐµÄ¼üÖµ¶Ô
+		  this->add(kv.first, kv.second);//½«¼üÖµ¶Ô±£´æµ½data_ÖÐ
+	  }
   }
   reader.close();
 }
-//$)A8y>]JdHk5D<|@42iUR6TS&5DV5
+//¸ù¾ÝÊäÈëµÄ¼üÀ´²éÕÒ¶ÔÓ¦µÄÖµ
 std::string Kv::get(const std::string &key) 
 {
-	//$)A1i@zvectorV.:sC;SP7"OVUb8v<|V5
+	//±éÀúvectorÖ®ºóÃ»ÓÐ·¢ÏÖÕâ¸ö¼üÖµ
   if (data_.find(key) == data_.end()) 
   {
     std::cerr << "[Kv] cannot find " << key << std::endl;
@@ -61,7 +63,7 @@ std::string Kv::get(const std::string &key)
   }
   return data_.at(key);
 }
-//$)A=+<|V56TLm<S5=data_VP1#4f
+//½«¼üÖµ¶ÔÌí¼Óµ½data_ÖÐ±£´æ
 void Kv::add(const std::string &key, const std::string &value) 
 {
   if (data_.find(key) != data_.end()) 
@@ -77,7 +79,7 @@ void Kv::add(const std::string &key, const std::string &value)
     data_[key] = v;
   }
 }
-//$)A=+4KkeyRF3}5t
+//½«´ËkeyÒÆ³ýµô
 void Kv::remove(const std::string &key) {
   if (data_.find(key) == data_.end()) {
     std::cerr << "[Kv] cannot find " << key << std::endl;
@@ -86,7 +88,7 @@ void Kv::remove(const std::string &key) {
   data_.erase(key);
 }
 
-//$)AGe?UmapDZH]
+//Çå¿ÕmapÄÚÈÝ
 void Kv::clear() {
   data_.clear();
 }
