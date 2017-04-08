@@ -13,7 +13,7 @@ int test_plate_locate()
 {
   cout << "test_plate_locate" << endl;
 
-  const string file = "resources/image/plate_locate.jpg";
+  const string file = "../resources/image/plate_locate.jpg";
   //½«Í¼Ïñ¶ÁÈëÄÚ´æ
   cv::Mat src = imread(file);
 

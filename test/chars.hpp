@@ -34,6 +34,7 @@ int test_chars_segment()
 int test_chars_identify() 
 {
   std::cout << "test_chars_identify" << std::endl;
+
   cv::Mat plate = cv::imread("resources/image/chars_identify.jpg");
 
   std::vector<Mat> matChars;

@@ -214,12 +214,13 @@ bool bFindLeftRightBound1(Mat &bound_threshold, int &posLeft, int &posRight)
   }
   return false;
 }
-
+//对二值化矩形区域，寻找左边界位置，右边界位置
 bool bFindLeftRightBound(Mat &bound_threshold, int &posLeft, int &posRight) {
 
 
   float span = bound_threshold.rows * 0.2f;
-
+  
+  //寻找左边界
   for (int i = 0; i < bound_threshold.cols - span - 1; i += 2) {
     int whiteCount = 0;
     for (int k = 0; k < bound_threshold.rows; k++) {
@@ -236,7 +237,7 @@ bool bFindLeftRightBound(Mat &bound_threshold, int &posLeft, int &posRight) {
   }
   span = bound_threshold.rows * 0.2f;
 
-
+  //寻找矩形区域的右边界
   for (int i = bound_threshold.cols - 1; i > span; i -= 2) {
     int whiteCount = 0;
     for (int k = 0; k < bound_threshold.rows; k++) {
@@ -357,7 +358,7 @@ Color getPlateType(const Mat &src, const bool adaptive_minsv)
     return BLUE;
   }
 }
-//将车牌上的柳钉去除
+//将矩形区域的柳钉去除
 void clearLiuDingOnly(Mat &img) 
 {
   const int x = 7;
@@ -366,15 +367,18 @@ void clearLiuDingOnly(Mat &img)
     int jumpCount = 0;
     int whiteCount = 0;
     for (int j = 0; j < img.cols - 1; j++) {
+		//如果当前像素值不等于下一个像素值
+		//jumpCount存储：当前像素值和下一个像素点值不同的个数
       if (img.at<char>(i, j) != img.at<char>(i, j + 1)) jumpCount++;
-
+	  //如果当前像素值为255，白点，则记录。。。
       if (img.at<uchar>(i, j) == 255) {
         whiteCount++;
       }
     }
+	//jump是一个单行多列的行矩阵，每列存储在矩形区域中查找到的jumpCount个数
     jump.at<float>(i) = (float) jumpCount;
   }
-
+  //遍历矩形区域，如果每行的jumpCount点的个数不足7个，则将这列元素全部赋值为0，即黑色
   for (int i = 0; i < img.rows; i++) {
     if (jump.at<float>(i) <= x) {
       for (int j = 0; j < img.cols; j++) {
@@ -394,19 +398,22 @@ bool clearLiuDing(Mat &img)
     int jumpCount = 0;
 
     for (int j = 0; j < img.cols - 1; j++) {
+		//如果当前像素值不等于下一个像素值
+		//jumpCount存储：当前像素值和下一个像素点值不同的个数
       if (img.at<char>(i, j) != img.at<char>(i, j + 1)) jumpCount++;
 
       if (img.at<uchar>(i, j) == 255) {
         whiteCount++;
       }
     }
-
+	//jump是一个单行多列的行矩阵，每列存储在矩形区域中查找到的jumpCount个数
     jump.at<float>(i) = (float) jumpCount;
   }
 
   int iCount = 0;
   for (int i = 0; i < img.rows; i++) {
     fJump.push_back(jump.at<float>(i));
+	//如果每行的像素值跳跃点的个数在16--45之间，则...
     if (jump.at<float>(i) >= 16 && jump.at<float>(i) <= 45) {
 
       // jump condition
@@ -418,7 +425,7 @@ bool clearLiuDing(Mat &img)
   if (iCount * 1.0 / img.rows <= 0.40) {
     return false;
   }
-
+  //白色像素点个数占矩形区域所有像素点个数的比例
   if (whiteCount * 1.0 / (img.rows * img.cols) < 0.15 ||
       whiteCount * 1.0 / (img.rows * img.cols) > 0.50) {
     return false;
@@ -1636,7 +1643,8 @@ void mserCharMatch(const Mat &src, std::vector<Mat> &match, std::vector<CPlate>&
     Color the_color = flags.at(color_index);
 
     std::vector<CCharacter> charVec;
-    charVec.reserve(128);
+    //charVec.reserve(128);
+	charVec.reserve(150);
 
     match.at(color_index) = Mat::zeros(image.rows, image.cols, image.type());
 

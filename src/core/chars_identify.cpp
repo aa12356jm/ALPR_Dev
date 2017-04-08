@@ -20,7 +20,7 @@ namespace easypr {
     ann_ = ml::ANN_MLP::load<ml::ANN_MLP>(kDefaultAnnPath);
     annChinese_ = ml::ANN_MLP::load<ml::ANN_MLP>(kChineseAnnPath);
     kv_ = std::shared_ptr<Kv>(new Kv);
-    kv_->load("etc/province_mapping");
+    kv_->load("../etc/province_mapping");
   }
 
   void CharsIdentify::LoadModel(std::string path) {

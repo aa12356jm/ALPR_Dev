@@ -14,7 +14,7 @@ AnnTrain::AnnTrain(const char* chars_folder, const char* xml)
   ann_ = cv::ml::ANN_MLP::create();
   type = 1;
   kv_ = std::shared_ptr<Kv>(new Kv);
-  kv_->load("etc/province_mapping");
+  kv_->load("../etc/province_mapping");
 }
 
 void AnnTrain::train() {

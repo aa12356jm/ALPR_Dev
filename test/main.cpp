@@ -14,11 +14,11 @@ namespace demo {
 //批量测试函数
 int accuracyTestMain() {
   std::shared_ptr<easypr::Kv> kv(new easypr::Kv);
-  kv->load("etc/chinese_mapping");
+  kv->load("../etc/chinese_mapping");
 
   bool isExit = false;
   while (!isExit) {
-    easypr::Utils::print_file_lines("etc/batch_test_menu");
+    easypr::Utils::print_file_lines("../etc/batch_test_menu");
     std::cout << kv->get("make_a_choice") << ":";
 
     int select = -1;
@@ -56,11 +56,11 @@ int testMain()
 {
   std::shared_ptr<easypr::Kv> kv(new easypr::Kv);
   //加载文件中的内容，以键值对的形式保存
-  kv->load("etc/chinese_mapping");
+  kv->load("../etc/chinese_mapping");
 
   bool isExit = false;
   while (!isExit) {
-    Utils::print_file_lines("etc/test_menu");
+    Utils::print_file_lines("../etc/test_menu");
     std::cout << kv->get("make_a_choice") << ":";
 
     int select = -1;
@@ -364,7 +364,7 @@ void command_line_handler(int argc, const char* argv[]) {
 //主函数
 int main(int argc, const char* argv[]) {
   std::shared_ptr<easypr::Kv> kv(new easypr::Kv);//智能指针kv，指向easypr::Kv类
-  kv->load("etc/chinese_mapping");//加载此文件中内容到kv类的成员变量vector类型的data_中
+  kv->load("../etc/chinese_mapping");//加载此文件中内容到kv类的成员变量vector类型的data_中
 
   if (argc > 1) 
   {
@@ -377,7 +377,7 @@ int main(int argc, const char* argv[]) {
   while (!isExit) 
   {
 	  //一行一行读取菜单内容并显示到dos中
-    easypr::Utils::print_file_lines("etc/main_menu");
+    easypr::Utils::print_file_lines("../etc/main_menu");
 	//get函数显示文件中make_a_choice对应的值，键值对的形式保存
 	std::cout << kv->get("make_a_choice") << ":";
 
@@ -415,12 +415,12 @@ int main(int argc, const char* argv[]) {
           break;
         case 6://开发团队
 		{
-          easypr::Utils::print_file_lines("etc/dev_team");
+          easypr::Utils::print_file_lines("../etc/dev_team");
           break;
         }
         case 7://感谢名单 
 		{
-          easypr::Utils::print_file_lines("etc/thanks");
+          easypr::Utils::print_file_lines("../etc/thanks");
           break;
         }
         case 8://退出

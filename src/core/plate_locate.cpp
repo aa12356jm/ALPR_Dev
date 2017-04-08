@@ -124,12 +124,13 @@ int CPlateLocate::colorSearch(const Mat &src, const Color r, Mat &out,
   const int color_morph_width = 10;
   const int color_morph_height = 2;
 
+  //得到使用颜色定位出来的图像的灰度图，保存在match_grey中
   colorMatch(src, match_grey, r, false);
 
   //if (m_debug) {
   //  utils::imwrite("resources/image/tmp/match_grey.jpg", match_grey);
   //}
-
+  //对灰度图进行二值化
   Mat src_threshold;
   threshold(match_grey, src_threshold, 0, 255,
             CV_THRESH_OTSU + CV_THRESH_BINARY);
@@ -144,9 +145,8 @@ int CPlateLocate::colorSearch(const Mat &src, const Color r, Mat &out,
 
   src_threshold.copyTo(out);
 
-
   vector<vector<Point>> contours;
-
+  //对二值化后的图像查找轮廓
   findContours(src_threshold,
                contours,               // a vector of contours
                CV_RETR_EXTERNAL,
@@ -167,14 +167,15 @@ int CPlateLocate::colorSearch(const Mat &src, const Color r, Mat &out,
   return 0;
 }
 
-//sobel第一次搜索矩形轮廓
+//sobel第一次搜索矩形轮廓，寻找
 int CPlateLocate::sobelFrtSearch(const Mat &src,vector<Rect_<float>> &outRects) 
 {
   Mat src_threshold;
-  //sobel边缘检测操作，输出检测到的车牌区域
+  //sobel边缘检测操作(高斯模糊，sobel边缘检测，二值化，闭运算)，输出二值化矩形区域
   sobelOper(src, src_threshold, m_GaussianBlurSize, m_MorphSizeWidth,
             m_MorphSizeHeight);
 
+  //在二值化图像中查找封闭轮廓点
   vector<vector<Point>> contours;
   findContours(src_threshold,
                contours,               // a vector of contours
@@ -184,10 +185,12 @@ int CPlateLocate::sobelFrtSearch(const Mat &src,vector<Rect_<float>> &outRects)
   vector<vector<Point>>::iterator itc = contours.begin();
 
   vector<RotatedRect> first_rects;
-
+  //将所有疑似矩形区域找出来
   while (itc != contours.end()) 
   {
+	//寻找最小包围矩形
     RotatedRect mr = minAreaRect(Mat(*itc));
+	//判断矩形是否符合要求
     if (verifySizes(mr)) 
 	{
       first_rects.push_back(mr);
@@ -199,36 +202,37 @@ int CPlateLocate::sobelFrtSearch(const Mat &src,vector<Rect_<float>> &outRects)
     }
     ++itc;
   }
-
+  //再次筛选矩形区域
   for (size_t i = 0; i < first_rects.size(); i++) 
   {
     RotatedRect roi_rect = first_rects[i];
 
     Rect_<float> safeBoundRect;
+	//计算封闭轮廓点的最小外接旋转矩形是否超过原始图像，超过的话进行处理，处理后的矩形放在safeBoundRect中
     if (!calcSafeRect(roi_rect, src, safeBoundRect)) 
 		continue;
-
+	//保存输出
     outRects.push_back(safeBoundRect);
   }
   return 0;
 }
 
-
+//对在源图像截取出的矩形区域再次进行检测
 int CPlateLocate::sobelSecSearchPart(Mat &bound, Point2f refpoint,
                                      vector<RotatedRect> &outRects) {
   Mat bound_threshold;
-
+  //高斯模糊，sobel在x方向上的边缘检测，二值化，闭操作等，得到二值化图像输出到bound_threshold中
   sobelOperT(bound, bound_threshold, 3, 6, 2);
 
   Mat tempBoundThread = bound_threshold.clone();
-
+  
+  //二值化图像中去除柳钉
   clearLiuDingOnly(tempBoundThread);
 
   int posLeft = 0, posRight = 0;
+  //寻找矩形区域的左边界和右边界位置，进行修复
   if (bFindLeftRightBound(tempBoundThread, posLeft, posRight)) {
-
-    // find left and right bounds to repair
-
+    // 找到左边界和右边界进行修复
     if (posRight != 0 && posLeft != 0 && posLeft < posRight) {
       int posY = int(bound_threshold.rows * 0.5);
       for (int i = posLeft + (int) (bound_threshold.rows * 0.1);
@@ -240,14 +244,14 @@ int CPlateLocate::sobelSecSearchPart(Mat &bound, Point2f refpoint,
     utils::imwrite("resources/image/tmp/repaireimg1.jpg", bound_threshold);
 
     // remove the left and right boundaries
-
+	//移除左右边界
     for (int i = 0; i < bound_threshold.rows; i++) {
       bound_threshold.data[i * bound_threshold.cols + posLeft] = 0;
       bound_threshold.data[i * bound_threshold.cols + posRight] = 0;
     }
     utils::imwrite("resources/image/tmp/repaireimg2.jpg", bound_threshold);
   }
-
+  //对修复后的矩形二值化区域寻找封闭轮廓点
   vector<vector<Point>> contours;
   findContours(bound_threshold,
                contours,               // a vector of contours
@@ -258,6 +262,7 @@ int CPlateLocate::sobelSecSearchPart(Mat &bound, Point2f refpoint,
 
   vector<RotatedRect> second_rects;
   while (itc != contours.end()) {
+	  //最小外接矩形
     RotatedRect mr = minAreaRect(Mat(*itc));
     second_rects.push_back(mr);
     ++itc;
@@ -271,6 +276,7 @@ int CPlateLocate::sobelSecSearchPart(Mat &bound, Point2f refpoint,
       float angle = roi.angle;
 
       RotatedRect refroi(refcenter, size, angle);
+	  //按照旋转矩形的中心点，大小，旋转角度创建矩形，并输出
       outRects.push_back(refroi);
     }
   }
@@ -372,7 +378,7 @@ int CPlateLocate::sobelOper(const Mat &in, Mat &out, int blurSize, int morphW,in
   
   //使用element结构元素对图像进行闭操作（先膨胀，后腐蚀），弥补缝隙，连接图像区域
   morphologyEx(mat_threshold, mat_threshold, MORPH_CLOSE, element);
-
+  //输出处理后的图像
   out = mat_threshold;
 
   return 0;
@@ -401,6 +407,7 @@ void deleteNotArea(Mat &inmat, Color color = UNKNOWN)
   if (BLUE == plateType) 
   {
     img_threshold = input_grey.clone();
+	//截取区域
     Mat tmp = input_grey(Rect_<double>(w * 0.15, h * 0.15, w * 0.7, h * 0.7));
 	//得到二值化阈值点
 	int threadHoldV = ThresholdOtsu(tmp);
@@ -462,6 +469,7 @@ void deleteNotArea(Mat &inmat, Color color = UNKNOWN)
 }
 
 //抗扭斜处理
+//在src源图像中画矩形区域的线
 int CPlateLocate::deskew(const Mat &src, const Mat &src_b,
                          vector<RotatedRect> &inRects,
                          vector<CPlate> &outPlates, bool useDeteleArea, Color color) {
@@ -479,7 +487,7 @@ int CPlateLocate::deskew(const Mat &src, const Mat &src_b,
       roi_angle = 90 + roi_angle;
       swap(roi_rect_size.width, roi_rect_size.height);
     }
-
+	//在源图像上画出矩形区域的4条线
     if (m_debug) {
       Point2f rect_points[4];
       roi_rect.points(rect_points);
@@ -496,7 +504,7 @@ int CPlateLocate::deskew(const Mat &src, const Mat &src_b,
     if (roi_angle - m_angle < 0 && roi_angle + m_angle > 0) 
 	{
       Rect_<float> safeBoundRect;
-	  //计算安全矩形
+	  //计算安全矩形,防止旋转后的图像超过原始图像大小
       bool isFormRect = calcSafeRect(roi_rect, src, safeBoundRect);
       if (!isFormRect) continue;
 
@@ -536,7 +544,7 @@ int CPlateLocate::deskew(const Mat &src, const Mat &src_b,
         double roi_slope = 0;
         // imshow("1roated_mat",rotated_mat);
         // imshow("rotated_mat_b",rotated_mat_b);
-		//是否偏斜，输入二值化图像，判断白色区域是否为平行四边形
+		//是否偏斜，输入二值化图像，判断白色区域是否为平行四边形，为平行四边形，则旋转
         if (isdeflection(rotated_mat_b, roi_angle, roi_slope)) 
 		{
 			//仿射变换,将输入变形车牌图像旋转为正视角图像
@@ -554,10 +562,11 @@ int CPlateLocate::deskew(const Mat &src, const Mat &src_b,
       if (useDeteleArea)
         deleteNotArea(deskew_mat, color);
 
-
+	  //判断，抗扭斜处理后图像的宽高比在2.3--6之间
       if (deskew_mat.cols * 1.0 / deskew_mat.rows > 2.3 &&
           deskew_mat.cols * 1.0 / deskew_mat.rows < 6) {
-
+		  
+		  //对图像缩放到同一尺寸
         if (deskew_mat.cols >= WIDTH || deskew_mat.rows >= HEIGHT)
           resize(deskew_mat, plate_mat, plate_mat.size(), 0, 0, INTER_AREA);
         else
@@ -947,7 +956,7 @@ int CPlateLocate::plateMserLocate(Mat src, vector<CPlate> &candPlates, int img_i
   return 0;
 }
 
-//sobel操作，输入：图像，高斯模糊半径大小，形态学模板的宽度和高度
+//sobel操作，输入：图像，高斯模糊半径大小，形态学模板的宽度和高度（高斯模糊，sobel在x方向上的边缘检测，二值化，闭操作）
 int CPlateLocate::sobelOperT(const Mat &in, Mat &out, int blurSize, int morphW,int morphH) 
 {
   Mat mat_blur;
@@ -1006,38 +1015,46 @@ int CPlateLocate::plateSobelLocate(Mat src, vector<CPlate> &candPlates,int index
 
   vector<Rect_<float>> bound_rects;
   bound_rects.reserve(256);
-  //sobel第一次搜索
+  //sobel第一次处理（对输入图像进行高斯模糊，sobel的x方向边缘检测，二值化，闭操作，查找封闭轮廓，所有轮廓的最小外接矩形，剔除不合格矩形区域）
+  //将处理后的图像输出到bound_rects中
   sobelFrtSearch(src, bound_rects);
 
   vector<Rect_<float>> bound_rects_part;
   bound_rects_part.reserve(256);
 
-  // enlarge area 
+  // enlarge area 将每个旋转矩形的区域放大
+  //这部分作用就是将每个旋转矩形的区域进行放大处理
+  //矩形区域左边界x向左延伸，上边界y向上延伸，对高度和宽度进行一定程度的放大处理
   for (size_t i = 0; i < bound_rects.size(); i++) 
   {
     float fRatio = bound_rects[i].width * 1.0f / bound_rects[i].height;
+	//矩形区域的宽高比在1.0---3.0，并且矩形高度<120
     if (fRatio < 3.0 && fRatio > 1.0 && bound_rects[i].height < 120) 
 	{
       Rect_<float> itemRect = bound_rects[i];
 
+	  //矩形区域的x坐标向左延伸，变小
       itemRect.x = itemRect.x - itemRect.height * (4 - fRatio);
+	  //但是矩形区域的x坐标不能超过整幅图像的左边界，为负
       if (itemRect.x < 0) 
 	  {
         itemRect.x = 0;
       }
-      itemRect.width = itemRect.width + itemRect.height * 2 * (4 - fRatio);
+      itemRect.width = itemRect.width + itemRect.height * 2 * (4 - fRatio);//矩形区域宽度变大
+	  
+	  //每个旋转矩形的区域都不能超过整幅图像大小
       if (itemRect.width + itemRect.x >= src.cols) 
 	  {
         itemRect.width = src.cols - itemRect.x;
       }
-
+	  //矩形区域的y坐标向上延伸，变小
       itemRect.y = itemRect.y - itemRect.height * 0.08f;
-      itemRect.height = itemRect.height * 1.16f;
-
+      itemRect.height = itemRect.height * 1.16f;//矩形区域高度变大
+	  //保存放大后的矩形区域
       bound_rects_part.push_back(itemRect);
     }
   }
-
+  //利用检测到的矩形区域，将这部分矩形区域从原始图像中取出，再次进行处理
   // second processing to split one
 #pragma omp parallel for
   for (int i = 0; i < (int)bound_rects_part.size(); i++) 
@@ -1053,19 +1070,22 @@ int CPlateLocate::plateSobelLocate(Mat src, vector<CPlate> &candPlates,int index
     float height =
         y + bound_rect.height < src.rows ? bound_rect.height : src.rows - y;
 
-    Rect_<float> safe_bound_rect(x, y, width, height);
-    Mat bound_mat = src(safe_bound_rect);
+    Rect_<float> safe_bound_rect(x, y, width, height);//得到旋转矩形在整幅图像中的不超过边界的安全矩形
+    Mat bound_mat = src(safe_bound_rect);//在源图像中截取这个矩形区域（彩色图像，未经任何处理）
 
+	//对源图像中截取的彩色图像再次进行处理（高斯模糊，sobel在x方向边缘，二值化，闭操作等，去除柳钉，修复边界等）
+	//将输出图像放在rects_sobel中
     vector<RotatedRect> rects_sobel;
     rects_sobel.reserve(128);
     sobelSecSearchPart(bound_mat, refpoint, rects_sobel);
 
 #pragma omp critical
     {
+		//将处理后的图像保存到rects_sobel_all中
       rects_sobel_all.insert(rects_sobel_all.end(), rects_sobel.begin(), rects_sobel.end());
     }
   }
-
+  //并行计算
 #pragma omp parallel for
   for (int i = 0; i < (int)bound_rects.size(); i++) 
   {
@@ -1096,12 +1116,12 @@ int CPlateLocate::plateSobelLocate(Mat src, vector<CPlate> &candPlates,int index
 
   Mat src_b;
   sobelOper(src, src_b, 3, 10, 3);
-  //抗扭斜处理
+  //抗扭斜处理，rects_sobel_all中存储的所有矩形区域经过处理和筛选，保存到候选车牌plates中
   deskew(src, src_b, rects_sobel_all, plates);
 
   //for (size_t i = 0; i < plates.size(); i++) 
   //  candPlates.push_back(plates[i]);
-
+  //候选车牌
   candPlates.insert(candPlates.end(), plates.begin(), plates.end());
 
   return 0;

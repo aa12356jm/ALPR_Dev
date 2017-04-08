@@ -66,7 +66,7 @@ namespace easypr {
 
     int accuracyTest(const char* test_path, Result& result, bool useParams = false) {
       std::shared_ptr<easypr::Kv> kv(new easypr::Kv);
-      kv->load("etc/chinese_mapping");
+      kv->load("../etc/chinese_mapping");
 
       map<string, vector<CPlate>> xmlMap;
       string path(test_path);
