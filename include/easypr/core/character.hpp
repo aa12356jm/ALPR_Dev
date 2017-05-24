@@ -86,9 +86,11 @@ namespace easypr {
     Rect m_characterPos;
 
     //! character str
+	//是什么字符
     String m_characterStr;
 
     //! character likely
+	//字符相似度
     double m_score;
 
     //! weather is chinese

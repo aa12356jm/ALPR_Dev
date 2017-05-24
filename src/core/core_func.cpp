@@ -11,16 +11,15 @@ namespace easypr {
 
 //! 根据一幅图像与颜色模板获取对应的二值图
 //! 输入：RGB源图像, 颜色模板（蓝色、黄色、白色）
-//! 输出灰度图（0和255两个值，像素点为255代表匹配，为0代表不匹配）
+//! 输出二值图（整幅图像中，像素点为255代表匹配区域，为0代表不匹配区域）
 Mat colorMatch(const Mat &src, Mat &match, const Color r,
                const bool adaptive_minsv) {
-
   // if use adaptive_minsv
   // min value of s and v is adaptive to h
- // S和V的最小值由adaptive_minsv这个bool值判断
-	// 如果为true，则最小值取决于H值，按比例衰减
-	// 如果为false，则不再自适应，使用固定的最小值minabs_sv
-	// 默认为false
+  // S和V的最小值由adaptive_minsv这个bool值判断
+  // 如果为true，则最小值取决于H值，按比例衰减
+  // 如果为false，则不再自适应，使用固定的最小值minabs_sv
+  // 默认为false
   const float max_sv = 255;
   const float minref_sv = 64;
 
@@ -32,16 +31,17 @@ Mat colorMatch(const Mat &src, Mat &match, const Color r,
   //opencv为了保证HSV三个分量都落在0-255之间（确保一个char能装的下），
   //对H分量除以了2，也就是0-180的范围，S和V分量乘以了255，将0-1的范围扩展到0-255。
   //我们在设置阈值的时候需要参照opencv的标准，因此对参数要进行一个转换
+  //蓝色分量范围200--280
   const int min_blue = 100;  // 100
   const int max_blue = 140;  // 140
 
   // H range of yellow
-
+  //黄色分量范围30--80
   const int min_yellow = 15;  // 15
   const int max_yellow = 40;  // 40
 
   // H range of white
-
+  //白色分量范围0--60
   const int min_white = 0;   // 15
   const int max_white = 30;  // 40
 
@@ -117,7 +117,6 @@ Mat colorMatch(const Mat &src, Mat &match, const Color r,
       bool colorMatched = false;
 	  //如果这个像素点的h分量在给定范围之内
       if (H > min_h && H < max_h) {
-        
 		  float Hdiff = 0;
         if (H > avg_h)
           Hdiff = H - avg_h;
@@ -135,7 +134,7 @@ Mat colorMatch(const Mat &src, Mat &match, const Color r,
         if ((S > min_sv && S < max_sv) && (V > min_sv && V < max_sv))
           colorMatched = true;
       }
-	  //如果此像素点为匹配点，则将其v亮度通道设为255，为白色点，否则为黑色点
+	  //如果此像素点为匹配点，则将其v亮度通道设为255，为红色点，否则为黑色点
       if (colorMatched == true) {
         p[j] = 0;
         p[j + 1] = 0;
@@ -156,7 +155,7 @@ Mat colorMatch(const Mat &src, Mat &match, const Color r,
   Mat src_grey;
   std::vector<cv::Mat> hsvSplit_done;
   split(src_hsv, hsvSplit_done);
-  //将其v亮度通道分离出来，输出为匹配图像
+  //将其v亮度通道分离出来，去除掉h和s通道，为二值图像（匹配点为白色点，不匹配点为黑色点），输出为匹配图像
   src_grey = hsvSplit_done[2];
 
   match = src_grey;
@@ -561,7 +560,7 @@ Mat CutTheRect(Mat &in, Rect &rect) {
 
   int x = (int) floor((float) (size - rect.width) / 2.0f);
   int y = (int) floor((float) (size - rect.height) / 2.0f);
-
+  //将矩形区域中的所有像素点的值都绘制在新图像中
   for (int i = 0; i < rect.height; ++i) {
 
     for (int j = 0; j < rect.width; ++j) {
@@ -581,7 +580,8 @@ Rect GetCenterRect(Mat &in) {
   int bottom = in.rows - 1;
 
   // find the center rect
-
+  //文字最上边点坐标
+  //从mat中顶部开始逐行向下寻找，找到像素值大于20的像素点则为文字的最顶点
   for (int i = 0; i < in.rows; ++i) {
     bool bFind = false;
     for (int j = 0; j < in.cols; ++j) {
@@ -596,9 +596,9 @@ Rect GetCenterRect(Mat &in) {
     }
 
   }
-  for (int i = in.rows - 1;
-  i >= 0;
-  --i) {
+  //文字最低边点坐标
+  //从mat中底部逐行向上开始寻找，找到像素值大于20的像素点则为文字的最低点
+  for (int i = in.rows - 1;i >= 0;--i) {
     bool bFind = false;
     for (int j = 0; j < in.cols; ++j) {
       if (in.data[i * in.step[0] + j] > 20) {
@@ -612,8 +612,8 @@ Rect GetCenterRect(Mat &in) {
     }
 
   }
-
-
+  //文字最左边点坐标
+  //从mat中从左到右逐列寻找，找到像素值大于20的像素点则为文字最左边的点
   int left = 0;
   int right = in.cols - 1;
   for (int j = 0; j < in.cols; ++j) {
@@ -630,10 +630,10 @@ Rect GetCenterRect(Mat &in) {
     }
 
   }
-  for (int j = in.cols - 1;
-  j >= 0;
-  --j) {
-    bool bFind = false;
+  //文字最右边点坐标
+  //从mat中从右到左逐列寻找，找到像素值大于20的像素点则为文字最右边的点
+  for (int j = in.cols - 1;j >= 0;--j) {
+	  bool bFind = false;
     for (int i = 0; i < in.rows; ++i) {
       if (in.data[i * in.step[0] + j] > 20) {
         right = j;
@@ -646,7 +646,7 @@ Rect GetCenterRect(Mat &in) {
       break;
     }
   }
-
+  //得到文字的矩形区域
   _rect.x = left;
   _rect.y = top;
   _rect.width = right - left + 1;
@@ -693,7 +693,7 @@ Mat ProjectedHistogram(Mat img, int t) {
 
   //convertTo转换矩阵，-1表示目的矩阵和源矩阵类型一致
   //参数1:目标矩阵，参数2:目标矩阵类型，参数3:变化尺度值，参数4:尺度上的加权值
-  //对矩阵的所有像素值进行归一化处理到范围0-1
+  //对向量中的所有值归一化处理到范围0-1
   if (max > 0)
     mhist.convertTo(mhist, -1, 1.0f / max, 0);
 
@@ -735,11 +735,11 @@ Rect GetChineseRect(const Rect rectSpe) {
 
   return a;
 }
-
+//字符区域参数
 bool verifyCharSizes(Rect r) {
   // Char sizes 45x90
-  float aspect = 45.0f / 90.0f;
-  float charAspect = (float)r.width / (float)r.height;
+  float aspect = 45.0f / 90.0f;//通常宽高比
+  float charAspect = (float)r.width / (float)r.height;//矩形宽高比
   float error = 0.35f;
   float minHeight = 25.f;
   float maxHeight = 50.f;
@@ -749,7 +749,7 @@ bool verifyCharSizes(Rect r) {
 
   // bb area
   int bbArea = r.width * r.height;
-
+  //如果矩形宽高比在范围内，则TRUE
   if (charAspect > minAspect && charAspect < maxAspect /*&&
                                                        r.rows >= minHeight && r.rows < maxHeight*/)
                                                        return true;
@@ -757,7 +757,7 @@ bool verifyCharSizes(Rect r) {
     return false;
 }
 
-//
+//如果图像的宽度或者高度大于指定值，则同比例缩小图像，将缩小比例输出
 Mat scaleImage(const Mat& image, const Size& maxSize, double& scale_ratio) {
   Mat ret;
 
@@ -823,10 +823,10 @@ bool verifyPlateSize(Rect mr) {
   else
     return true;
 }
-
+//判断旋转矩形车牌大小
 bool verifyRotatedPlateSizes(RotatedRect mr, bool showDebug) {
   float error = 0.65f;
-  // Spain car plate size: 52x11 aspect 4,7272
+  // Spain car plate size: 52x11 aspect 4.7272
   // China car plate size: 440mm*140mm，aspect 3.142857
 
   // Real car plate size: 136 * 32, aspect 4
@@ -839,21 +839,21 @@ bool verifyRotatedPlateSizes(RotatedRect mr, bool showDebug) {
   //int max = 34 * 8 * 200;  // maximum area
 
   // Get only patchs that match to a respect ratio.
-  float aspect_min = aspect - aspect * error;
+  float aspect_min = aspect - aspect * error;//车牌区域的最小宽高比
   float aspect_max = aspect + aspect * error;
 
   float width_max = 600.f;
   float width_min = 30.f;
 
-  float min = float(width_min * width_min / aspect_max);  // minimum area
-  float max = float(width_max * width_max / aspect_min);  // maximum area
+  float min = float(width_min * width_min / aspect_max);  // minimum area最小面积
+  float max = float(width_max * width_max / aspect_min);  // maximum area最大面积
 
   float width = mr.size.width;
   float height = mr.size.height;
-  float area = width * height;
+  float area = width * height;//输入的矩形区域的面积
 
-  float ratio = width / height;
-  float angle = mr.angle;
+  float ratio = width / height;//输入的矩形区域的宽高比
+  float angle = mr.angle;//输入的旋转矩形的旋转角度
   if (ratio < 1) {
     swap(width, height);
     ratio = width / height;
@@ -861,41 +861,41 @@ bool verifyRotatedPlateSizes(RotatedRect mr, bool showDebug) {
     angle = 90.f + angle;
     //std::cout << "angle:" << angle << std::endl;
   }
-
+  //旋转角度在-60--60度之间
   float angle_min = -60.f;
   float angle_max = 60.f;
 
   //std::cout << "aspect_min:" << aspect_min << std::endl;
   //std::cout << "aspect_max:" << aspect_max << std::endl;
-
+  //旋转矩形面积不在此范围内，则FALSE
   if (area < min || area > max) {
     if (0 && showDebug) {
       std::cout << "area < min || area > max: " << area << std::endl;
     }
 
     return false;
-  }
+  }//宽高比不在范围内，则false
   else if (ratio < aspect_min || ratio > aspect_max) {
     if (0 && showDebug) {
       std::cout << "ratio < aspect_min || ratio > aspect_max: " << ratio << std::endl;
     }
     
     return false;
-  }
+  }//如果旋转角度在-60到60之外，则 false
   else if (angle < angle_min || angle > angle_max) {
     if (0 && showDebug) {
       std::cout << "angle < angle_min || angle > angle_max: " << angle << std::endl;
     }
     
     return false;
-  }
+  }//如果宽度在30到600之外，则false
   else if (width < width_min || width > width_max) {
     if (0 && showDebug) {
       std::cout << "width < width_min || width > width_max: " << width << std::endl;
     }
     
     return false;  
-  }
+  }//都符合条件，则返回true
   else {
     return true;
   }
@@ -904,6 +904,7 @@ bool verifyRotatedPlateSizes(RotatedRect mr, bool showDebug) {
 }
 
 //! non-maximum suppression
+//每一个字符区域都和其余区域依次相比，低于指定比值的则去除掉
 void NMStoCharacter(std::vector<CCharacter> &inVec, double overlap) {
 
   std::sort(inVec.begin(), inVec.end());
@@ -922,9 +923,9 @@ void NMStoCharacter(std::vector<CCharacter> &inVec, double overlap) {
       //Rect rectInter = rectSrc & rectComp;
       //Rect rectUnion = rectSrc | rectComp;
       //double r = double(rectInter.area()) / double(rectUnion.area());
-
+	  //面积比
       float iou = computeIOU(rectSrc, rectComp);
-
+	  //大于指定值，则擦除
       if (iou > overlap) {
         itc = inVec.erase(itc);
       }
@@ -1604,6 +1605,7 @@ void removeOutliers(std::vector<CCharacter>& charGroup, double thresh, Mat resul
 }
 
 //! use verify size to first generate char candidates
+//使用最大稳定极值区域(MSER)方法进行文字定位，然后将这些文字组合，形成车牌
 void mserCharMatch(const Mat &src, std::vector<Mat> &match, std::vector<CPlate>& out_plateVec_blue, std::vector<CPlate>& out_plateVec_yellow,
   bool usePlateMser, std::vector<RotatedRect>& out_plateRRect_blue, std::vector<RotatedRect>& out_plateRRect_yellow, int img_index,
   bool showDebug) {
@@ -1624,14 +1626,15 @@ void mserCharMatch(const Mat &src, std::vector<Mat> &match, std::vector<CPlate>&
   flags.push_back(BLUE);
   flags.push_back(YELLOW);
 
-  const int imageArea = image.rows * image.cols;
+  const int imageArea = image.rows * image.cols;//输入图像面积
   const int delta = 1;
   //const int delta = CParams::instance()->getParam2i();;
-  const int minArea = 30;
+  const int minArea = 30;//
   const double maxAreaRatio = 0.05;
 
   Ptr<MSER2> mser;
   mser = MSER2::create(delta, minArea, int(maxAreaRatio * imageArea));
+  //使用mser提取文字区域
   mser->detectRegions(image, all_contours.at(0), all_boxes.at(0), all_contours.at(1), all_boxes.at(1));
 
   // mser detect 
@@ -1666,8 +1669,10 @@ void mserCharMatch(const Mat &src, std::vector<Mat> &match, std::vector<CPlate>&
 
       // sometimes a plate could be a mser rect, so we could
       // also use mser algorithm to find plate
+	  //如果使用mser方法来检测车牌
       if (usePlateMser) {
-        RotatedRect rrect = minAreaRect(Mat(contour));
+        RotatedRect rrect = minAreaRect(Mat(contour));//最小外接旋转矩形
+		//判断旋转矩形是否在范围内
         if (verifyRotatedPlateSizes(rrect)) {
           //rotatedRectangle(result, rrect, Scalar(255, 0, 0), 2);
           if (the_color == BLUE) out_plateRRect_blue.push_back(rrect);
@@ -1676,13 +1681,17 @@ void mserCharMatch(const Mat &src, std::vector<Mat> &match, std::vector<CPlate>&
       }
 
       // find character
+	  //矩形区域是否符合字符参数
       if (verifyCharSizes(rect)) {
+		  //判断点在矩形区域内，则将此点像素值设置为百色点
         Mat mserMat = adaptive_image_from_points(contour, rect, Size(char_size, char_size));
-        Mat charInput = preprocessChar(mserMat, char_size);
+        //队矩形区域进行预处理，仿射变换
+		Mat charInput = preprocessChar(mserMat, char_size);
         Rect charRect = rect;
-
+		//矩形区域中心点
         Point center(charRect.tl().x + charRect.width / 2, charRect.tl().y + charRect.height / 2);
         Mat tmpMat;
+		//二值化
         double ostu_level = cv::threshold(image(charRect), tmpMat, 0, 255, CV_THRESH_BINARY | CV_THRESH_OTSU);
 
         //cv::circle(result, center, 3, Scalar(0, 0, 255), 2);
@@ -1707,19 +1716,23 @@ void mserCharMatch(const Mat &src, std::vector<Mat> &match, std::vector<CPlate>&
     // reduce the characters which are not likely to be true
     // charaters, and use the score to select the strong seed
     // of which the score is larger than 0.9
+	//对字符预测其可能的值和对应的概率
+	//将分类结果概率大于0.9的设为强种子
     CharsIdentify::instance()->classify(charVec);
 
     // use nms to remove the character are not likely to be true.
+	//使用非极大值抑制去除掉不太可能的字符
     double overlapThresh = 0.6;
     //double overlapThresh = CParams::instance()->getParam1f();
+	//每一个字符区域都和其余区域依次相比，低于指定比值的则去除掉
     NMStoCharacter(charVec, overlapThresh);
-    charVec.shrink_to_fit();
+    charVec.shrink_to_fit();//请求容器降低其容量和size匹配
 
-    std::vector<CCharacter> strongSeedVec;
+    std::vector<CCharacter> strongSeedVec;//文字分类器,将分类结果概率大于0.9的设为强种子
     strongSeedVec.reserve(64);
-    std::vector<CCharacter> weakSeedVec;
+    std::vector<CCharacter> weakSeedVec;//概率大于0.5低于0.9的弱种子
     weakSeedVec.reserve(64);
-    std::vector<CCharacter> littleSeedVec;
+    std::vector<CCharacter> littleSeedVec;//概率低于0.5的种子
     littleSeedVec.reserve(64);
 
     //size_t charCan_size = charVec.size();
@@ -1727,13 +1740,14 @@ void mserCharMatch(const Mat &src, std::vector<Mat> &match, std::vector<CPlate>&
       //CCharacter& charCandidate = charVec[char_index];
       Rect rect = charCandidate.getCharacterPos();
       double score = charCandidate.getCharacterScore();
-      if (charCandidate.getIsStrong()) {
+      //强种子
+	  if (charCandidate.getIsStrong()) {
         strongSeedVec.push_back(charCandidate);
-      }
+      }//弱种子
       else if (charCandidate.getIsWeak()) {
         weakSeedVec.push_back(charCandidate);
         //cv::rectangle(result, rect, Scalar(255, 0, 255));
-      }
+      }//小种子
       else if (charCandidate.getIsLittle()) {
         littleSeedVec.push_back(charCandidate);
         //cv::rectangle(result, rect, Scalar(255, 0, 255));
@@ -1744,11 +1758,13 @@ void mserCharMatch(const Mat &src, std::vector<Mat> &match, std::vector<CPlate>&
 
     // nms to srong seed, only leave the strongest one
     overlapThresh = 0.3;
+	//使用非极大值抑制，只留下最强的种子
     NMStoCharacter(strongSeedVec, overlapThresh);
 
     // merge chars to group
     std::vector<std::vector<CCharacter>> charGroupVec;
     charGroupVec.reserve(64);
+	//将强种子区域合并到一起
     mergeCharToGroup(strongSeedVec, charGroupVec);
 
     // genenrate the line of the group
@@ -2262,7 +2278,9 @@ Mat adaptive_image_from_points(const std::vector<Point>& points,
   for (int i = 0; i < (int)points.size(); ++i) {
     Point point = points[i];
     Point currentPt(point.x - rect.tl().x + expendWidth, point.y - rect.tl().y + expendHeight);
-    if (mat_valid_position(image, currentPt.y, currentPt.x)) {
+    //判断这个点是否在图像图像区域内
+	if (mat_valid_position(image, currentPt.y, currentPt.x)) {
+		//将图像中的这个点设置像素值为forgroundColor
       setPoint(image, currentPt.y, currentPt.x, forgroundColor);
     }
   }

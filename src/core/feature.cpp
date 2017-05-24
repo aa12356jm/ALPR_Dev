@@ -97,32 +97,36 @@ void getLBPFeatures(const Mat& image, Mat& features) {
   //}
 
   Mat lbpimage;
-  lbpimage = libfacerec::olbp(grayImage);
-  Mat lbp_hist = libfacerec::spatial_histogram(lbpimage, 32, 4, 4);
+  lbpimage = libfacerec::olbp(grayImage);//使用LBP方法得到图像的纹理特征
+  Mat lbp_hist = libfacerec::spatial_histogram(lbpimage, 32, 4, 4);//得到LBP图的直方图
 
   features = lbp_hist;
 }
-
+//得到字符区域的特征，将图像中的文字矩形区域截取出来，然后计算直方图特征，存储在向量中返回
 Mat charFeatures(Mat in, int sizeData) {
   const int VERTICAL = 0;
   const int HORIZONTAL = 1;
 
   // cut the cetner, will afect 5% perices.
+  //得到文字的精确外接矩形区域
   Rect _rect = GetCenterRect(in);
+  //将文字的矩形区域截取出来
   Mat tmpIn = CutTheRect(in, _rect);
   //Mat tmpIn = in.clone();
 
   // Low data feature
   Mat lowData;
+  //将图像缩放到10*10大小
   resize(tmpIn, lowData, Size(sizeData, sizeData));
 
   // Histogram features
+  //得到水平直方图，垂直直方图
   Mat vhist = ProjectedHistogram(lowData, VERTICAL);
   Mat hhist = ProjectedHistogram(lowData, HORIZONTAL);
 
   // Last 10 is the number of moments components
   int numCols = vhist.cols + hhist.cols + lowData.cols * lowData.cols;
-
+  //向量用来存储所有行，所有列像素值大于20的个数，图像中所有像素点的值
   Mat out = Mat::zeros(1, numCols, CV_32F);
   // Asign values to
 

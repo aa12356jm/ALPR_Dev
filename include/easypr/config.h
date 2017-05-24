@@ -16,10 +16,10 @@ namespace easypr {
     PR_DETECT_CMSER = 0x04,  /**Character detect type, using mser  */
   };
 
-static const char* kDefaultSvmPath = "resources/model/svm.xml";
-static const char* kLBPSvmPath = "resources/model/svm_lbp_final.xml";
-static const char* kDefaultAnnPath = "resources/model/ann.xml";
-static const char* kChineseAnnPath = "resources/model/ann_chinese.xml";
+static const char* kDefaultSvmPath = "../../resources/model/svm.xml";
+static const char* kLBPSvmPath = "../../resources/model/svm_lbp_final.xml";
+static const char* kDefaultAnnPath = "../../resources/model/ann.xml";
+static const char* kChineseAnnPath = "../../resources/model/ann_chinese.xml";
 
 typedef enum {
   kForward = 1, // correspond to "has plate"
@@ -74,9 +74,9 @@ static const char *kChars[] = {
   /*  31  */
 };
 
-static const int kCharactersNumber = 34;
-static const int kChineseNumber = 31;
-static const int kCharsTotalNumber = 65;
+static const int kCharactersNumber = 34;//非中文字符数，24个字母+10个数字
+static const int kChineseNumber = 31;//要识别的中文字符数
+static const int kCharsTotalNumber = 65;//字符类型总数，10个数字，24个字母，31个英文省份
 
 static bool kDebug = false;
 

@@ -90,15 +90,15 @@ int CPlateLocate::mserSearch(const Mat &src,  vector<Mat> &out,
 {
   vector<Mat> match_grey;
 
-  vector<CPlate> plateVec_blue;
+  vector<CPlate> plateVec_blue;//存储蓝色车牌区域
   plateVec_blue.reserve(16);
-  vector<RotatedRect> plateRRect_blue;
+  vector<RotatedRect> plateRRect_blue;//存储蓝色车牌矩形区域
   plateRRect_blue.reserve(16);
 
-  vector<CPlate> plateVec_yellow;
+  vector<CPlate> plateVec_yellow;//存储黄色车牌区域
   plateVec_yellow.reserve(16);
 
-  vector<RotatedRect> plateRRect_yellow;
+  vector<RotatedRect> plateRRect_yellow;//存储黄色车牌矩形区域
   plateRRect_yellow.reserve(16);
 
   mserCharMatch(src, match_grey, plateVec_blue, plateVec_yellow, usePlateMser, plateRRect_blue, plateRRect_yellow, img_index, showDebug);
@@ -124,19 +124,22 @@ int CPlateLocate::colorSearch(const Mat &src, const Color r, Mat &out,
   const int color_morph_width = 10;
   const int color_morph_height = 2;
 
-  //得到使用颜色定位出来的图像的灰度图，保存在match_grey中
+  //使用颜色定位车牌的匹配区域
+  //输出二值图（整幅图像中，像素点为255代表匹配区域，为0代表不匹配区域）
   colorMatch(src, match_grey, r, false);
 
   //if (m_debug) {
   //  utils::imwrite("resources/image/tmp/match_grey.jpg", match_grey);
   //}
-  //对灰度图进行二值化
+  //在上一步得到的图像已经是二值图像，还有必要二值化操作吗？经调试发现不必使用二值化操作
   Mat src_threshold;
   threshold(match_grey, src_threshold, 0, 255,
             CV_THRESH_OTSU + CV_THRESH_BINARY);
-
+  
+  //得到形态学模板
   Mat element = getStructuringElement(
       MORPH_RECT, Size(color_morph_width, color_morph_height));
+  //使用闭运算，消除缝隙，连接区域
   morphologyEx(src_threshold, src_threshold, MORPH_CLOSE, element);
 
   //if (m_debug) {
@@ -783,24 +786,28 @@ void CPlateLocate::affine(const Mat &in, Mat &out, const double slope) {
 //根据车牌颜色来检测车牌区域
 int CPlateLocate::plateColorLocate(Mat src, vector<CPlate> &candPlates,
                                    int index) {
-  vector<RotatedRect> rects_color_blue;
+  vector<RotatedRect> rects_color_blue;//存储蓝色矩形区域
   rects_color_blue.reserve(64);
-  vector<RotatedRect> rects_color_yellow;
+  vector<RotatedRect> rects_color_yellow;//存储黄色矩形区域
   rects_color_yellow.reserve(64);
 
-  vector<CPlate> plates_blue;
+  vector<CPlate> plates_blue;//存储蓝色车牌
   plates_blue.reserve(64);
-  vector<CPlate> plates_yellow;
+  vector<CPlate> plates_yellow;//存储黄色车牌
   plates_yellow.reserve(64);
 
   Mat src_clone = src.clone();
 
   Mat src_b_blue;
   Mat src_b_yellow;
+  
+  //声明该并行区域分为若干个section, section之间的运行顺序为并行的关系
+  //并行搜索蓝色矩形区域和黄色矩形区域
 #pragma omp parallel sections
   {
 #pragma omp section
     {
+		//寻找蓝色车牌区域，将所有
       colorSearch(src, BLUE, src_b_blue, rects_color_blue);
       deskew(src, src_b_blue, rects_color_blue, plates_blue, true, BLUE);
     }
@@ -818,11 +825,11 @@ int CPlateLocate::plateColorLocate(Mat src, vector<CPlate> &candPlates,
 }
 
 
-//! MSER plate locate，使用mser方式定位车牌
+//! MSER plate locate，使用mser方式定位车牌,(MSER)最大稳定极值区域
 int CPlateLocate::plateMserLocate(Mat src, vector<CPlate> &candPlates, int img_index) 
 {
   std::vector<Mat> channelImages;//存放不同通道的图像
-  std::vector<Color> flags;//存放颜色类型
+  std::vector<Color> flags;//存放颜色类型（存放蓝色，黄色）
   flags.push_back(BLUE);
   flags.push_back(YELLOW);
 
@@ -854,10 +861,11 @@ int CPlateLocate::plateMserLocate(Mat src, vector<CPlate> &candPlates, int img_i
     vector<Mat> src_b_vec;
 
     Mat channelImage = channelImages.at(i);
-
+	//如果图像的宽度或者高度大于指定值，则同比例缩小图像，将缩小比例输出
     Mat image = scaleImage(channelImage, Size(scale_size, scale_size), scale_ratio);
 
     // vector<RotatedRect> rects;
+	//使用mser方法对图像进行处理
     mserSearch(image, src_b_vec, platesVec, usePlateMser, plateRRectsVec, img_index, false);
 
     for (size_t j = 0; j < flags.size(); j++) {
@@ -1128,13 +1136,13 @@ int CPlateLocate::plateSobelLocate(Mat src, vector<CPlate> &candPlates,int index
 }
 
 //使用三种方式对车牌进行定位，并都输出到resultVec中
-int CPlateLocate::plateLocate(Mat src, vector<Mat> &resultVec, int index) 
-{
+int CPlateLocate::plateLocate(Mat src, vector<Mat> &resultVec, int index) {
   vector<CPlate> all_result_Plates;
 
-  plateColorLocate(src, all_result_Plates, index);
-  plateSobelLocate(src, all_result_Plates, index);
-  plateMserLocate(src, all_result_Plates, index);
+  plateColorLocate(src, all_result_Plates, index);//颜色定位
+  plateSobelLocate(src, all_result_Plates, index);//sobel边缘定位
+  plateMserLocate(src, all_result_Plates, index);//Mser(最大稳定极值区域)
+  //使用基于定位文字的方法来定位车牌，将定位到的文字组合起来就成为了车牌区域
 
   for (size_t i = 0; i < all_result_Plates.size(); i++) 
   {

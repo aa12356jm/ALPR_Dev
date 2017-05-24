@@ -399,14 +399,14 @@ int main(int argc, const char* argv[]) {
         case 3://SVMÑµÁ·
           std::cout << "Run \"demo svm\" for more usage." << std::endl;
           {
-            easypr::SvmTrain svm("tmp/svm", "tmp/svm.xml");
+            easypr::SvmTrain svm("../resources/train/svm", "../tmp/svm.xml");
             svm.train();
           }
           break;
         case 4://ANNÑµÁ·
           std::cout << "Run \"demo ann\" for more usage." << std::endl;
           {
-            easypr::AnnTrain ann("tmp/ann", "tmp/ann.xml");
+            easypr::AnnTrain ann("../resources/train/ann", "../tmp/ann.xml");
             ann.train();
           }
           break;

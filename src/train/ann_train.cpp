@@ -14,7 +14,7 @@ AnnTrain::AnnTrain(const char* chars_folder, const char* xml)
   ann_ = cv::ml::ANN_MLP::create();
   type = 1;
   kv_ = std::shared_ptr<Kv>(new Kv);
-  kv_->load("../etc/province_mapping");
+  kv_->load("../../etc/province_mapping");
 }
 
 void AnnTrain::train() {
@@ -34,21 +34,21 @@ void AnnTrain::train() {
     output_number = classNumber;
   }
   else if (type == 1) {
-    classNumber = kChineseNumber;
+    classNumber = kChineseNumber;//31个中文省份简称
 
-    input_number = kAnnInput;
-    hidden_number = kNeurons;
-    output_number = classNumber;
+    input_number = kAnnInput;//输入类型120个（31+）
+    hidden_number = kNeurons;//隐藏层神经元个数
+    output_number = classNumber;//输出类别31个，判断为31个字符中的哪一个
   }
 
   int N = input_number;
   int m = output_number;
-  int first_hidden_neurons = int(std::sqrt((m + 2) * N) + 2 * std::sqrt(N / (m + 2)));
-  int second_hidden_neurons = int(m * std::sqrt(N / (m + 2)));
+  int first_hidden_neurons = int(std::sqrt((m + 2) * N) + 2 * std::sqrt(N / (m + 2)));//第一个隐藏层神经元个数
+  int second_hidden_neurons = int(m * std::sqrt(N / (m + 2)));//第二个隐藏层神经元个数
 
   bool useTLFN = false;
   if (!useTLFN) {
-    layers.create(1, 3, CV_32SC1);
+    layers.create(1, 3, CV_32SC1);//创建一行三列的向量
     layers.at<int>(0) = input_number;
     layers.at<int>(1) = hidden_number;
     layers.at<int>(2) = output_number;
@@ -64,11 +64,15 @@ void AnnTrain::train() {
     layers.at<int>(2) = second_hidden_neurons;
     layers.at<int>(3) = output_number;
   }
-
+  //设置神经网络层数
   ann_->setLayerSizes(layers);
+  //OpenCV里提供了三种激活函数，线性函数(CvANN_MLP::IDENTITY)、sigmoid函数(CvANN_MLP::SIGMOID_SYM)和高斯激活函数(CvANN_MLP::GAUSSIAN)
+  //设置为Sigmoid函数,后面两个参数是SIGMOID激活函数中的两个参数α和β,一般情况下都设置为1
   ann_->setActivationFunction(cv::ml::ANN_MLP::SIGMOID_SYM, 1, 1);
-  ann_->setTrainMethod(cv::ml::ANN_MLP::TrainingMethods::BACKPROP);
-  ann_->setTermCriteria(cvTermCriteria(CV_TERMCRIT_ITER, 30000, 0.0001));
+  //设置训练方法，opencv中一共提供两种方法，（1）反向传播算法BACKPROP，（2）弹性反馈算法RPROP
+  ann_->setTrainMethod(cv::ml::ANN_MLP::TrainingMethods::BACKPROP);//设置训练方法为BP反向传播
+  ann_->setTermCriteria(cvTermCriteria(CV_TERMCRIT_ITER, 30000, 0.0001));//设置终止条件：迭代次数和误差最小值，有一个达到条件就终止
+  //设置BP训练方法的参数，主要有2个：（1）权值更新率,(2)权值更新冲量,一般都设置为0.1，太小了网络收敛速度会很慢，太大了可能会让网络越过最小值点
   ann_->setBackpropWeightScale(0.1);
   ann_->setBackpropMomentumScale(0.1);
 
@@ -236,8 +240,8 @@ cv::Ptr<cv::ml::TrainData> AnnTrain::sdata(size_t number_for_count) {
   std::vector<int> labels;
 
   int classNumber = 0;
-  if (type == 0) classNumber = kCharsTotalNumber;
-  if (type == 1) classNumber = kChineseNumber;
+  if (type == 0) classNumber = kCharsTotalNumber;//其它有65类
+  if (type == 1) classNumber = kChineseNumber;//中文有31类字符
   
   srand((unsigned)time(0));
   for (int i = 0; i < classNumber; ++i) {
@@ -252,10 +256,10 @@ cv::Ptr<cv::ml::TrainData> AnnTrain::sdata(size_t number_for_count) {
     size_t char_size = chars_files.size();
     fprintf(stdout, ">> Characters count: %d \n", char_size);
 
-    std::vector<cv::Mat> matVec;
+    std::vector<cv::Mat> matVec;//存储所有字符图像
     matVec.reserve(number_for_count);
     for (auto file : chars_files) {
-      auto img = cv::imread(file, 0);  // a grayscale image
+      auto img = cv::imread(file, 0);  //以灰度图形式读取
       matVec.push_back(img);
     }
 
@@ -275,7 +279,7 @@ cv::Ptr<cv::ml::TrainData> AnnTrain::sdata(size_t number_for_count) {
     fprintf(stdout, ">> Characters count: %d \n", matVec.size());
 
     for (auto img : matVec) {
-      auto fps = charFeatures2(img, kPredictSize);
+      auto fps = charFeatures2(img, kPredictSize);//提取特征
 
       samples.push_back(fps);
       labels.push_back(i);

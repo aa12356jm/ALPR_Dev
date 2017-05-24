@@ -20,7 +20,7 @@ namespace easypr {
     ann_ = ml::ANN_MLP::load<ml::ANN_MLP>(kDefaultAnnPath);
     annChinese_ = ml::ANN_MLP::load<ml::ANN_MLP>(kChineseAnnPath);
     kv_ = std::shared_ptr<Kv>(new Kv);
-    kv_->load("../etc/province_mapping");
+    kv_->load("../../etc/province_mapping");
   }
 
   void CharsIdentify::LoadModel(std::string path) {
@@ -83,7 +83,7 @@ namespace easypr {
     }
   }
 
-
+  //对输入的文字进行分类，给每个字符预测其具体字符和对应的概率
   void CharsIdentify::classify(std::vector<CCharacter>& charVec){
     size_t charVecSize = charVec.size();
 
@@ -92,14 +92,17 @@ namespace easypr {
 
     Mat featureRows;
     for (size_t index = 0; index < charVecSize; index++) {
-      Mat charInput = charVec[index].getCharacterMat();
-      Mat feature = charFeatures(charInput, kPredictSize);
-      featureRows.push_back(feature);
+      Mat charInput = charVec[index].getCharacterMat();//字符的矩形区域
+      Mat feature = charFeatures(charInput, kPredictSize);//得到图像中文字区域的特征行向量
+      featureRows.push_back(feature);//featureRows矩阵中每一行存储一个字符区域的特征向量
     }
 
-    cv::Mat output(charVecSize, kCharsTotalNumber, CV_32FC1);
+    //cv::Mat output(charVecSize, kCharsTotalNumber, CV_32FC1);
+	cv::Mat output(featureRows.size(), CV_32FC1);
+	//将
     ann_->predict(featureRows, output);
 
+	//将所有预测的结果打标签
     for (size_t output_index = 0; output_index < charVecSize; output_index++) {
       CCharacter& character = charVec[output_index];
       Mat output_row = output.row(output_index);
@@ -107,8 +110,9 @@ namespace easypr {
       int result = -1;
       float maxVal = -2.f;
       std::string label = "";
-
+	  //依次判断每个字符是否为中文
       bool isChinses = character.getIsChinese();
+	  //不是中文，则将对应的字符打标签
       if (!isChinses) {
         result = 0;
         for (int j = 0; j < kCharactersNumber; j++) {
@@ -121,7 +125,7 @@ namespace easypr {
         }
         label = std::make_pair(kChars[result], kChars[result]).second;
       }
-      else {
+      else {//是中文的话，则将这个字与对应的省份打标签
         result = kCharactersNumber;
         for (int j = kCharactersNumber; j < kCharsTotalNumber; j++) {
           float val = output_row.at<float>(j);
@@ -138,8 +142,8 @@ namespace easypr {
       }
       /*std::cout << "result:" << result << std::endl;
       std::cout << "maxVal:" << maxVal << std::endl;*/
-      character.setCharacterScore(maxVal);
-      character.setCharacterStr(label);
+      character.setCharacterScore(maxVal);//字符的可能性
+      character.setCharacterStr(label);//预测得到的字符
     }
   }
 
