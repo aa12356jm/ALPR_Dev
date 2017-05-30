@@ -38,6 +38,12 @@
       <Extensions>cpp;moc</Extensions>
       <SourceControlFiles>False</SourceControlFiles>
     </Filter>
+    <Filter Include="Header Files\EsayPR_test">
+      <UniqueIdentifier>{63cae039-0ad7-47fe-80c1-97f926156038}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\EsayPR_test">
+      <UniqueIdentifier>{fe9f64bb-399a-4043-89ad-b34bcf3ddc03}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -55,6 +61,12 @@
     <ClCompile Include="GeneratedFiles\qrc_mainWindow.cpp">
       <Filter>Generated Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\thirdparty\xmlParser\xmlParser.cpp">
+      <Filter>Source Files\EsayPR_test</Filter>
+    </ClCompile>
+    <ClCompile Include="pixitem.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="mainWindow.h">
@@ -70,6 +82,21 @@
   <ItemGroup>
     <ClInclude Include="GeneratedFiles\ui_mainWindow.h">
       <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\test\accuracy.hpp">
+      <Filter>Header Files\EsayPR_test</Filter>
+    </ClInclude>
+    <ClInclude Include="..\test\config.hpp">
+      <Filter>Header Files\EsayPR_test</Filter>
+    </ClInclude>
+    <ClInclude Include="..\test\result.hpp">
+      <Filter>Header Files\EsayPR_test</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\xmlParser\xmlParser.h">
+      <Filter>Header Files\EsayPR_test</Filter>
+    </ClInclude>
+    <ClInclude Include="pixitem.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
