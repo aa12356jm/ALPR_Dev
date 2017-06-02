@@ -16,10 +16,10 @@ namespace easypr {
     PR_DETECT_CMSER = 0x04,  /**Character detect type, using mser  */
   };
 
-static const char* kDefaultSvmPath = "../../resources/model/svm.xml";
-static const char* kLBPSvmPath = "../../resources/model/svm_lbp_final.xml";
-static const char* kDefaultAnnPath = "../../resources/model/ann.xml";
-static const char* kChineseAnnPath = "../../resources/model/ann_chinese.xml";
+static const char* kDefaultSvmPath = "../resources/model/svm.xml";
+static const char* kLBPSvmPath = "../resources/model/svm_lbp_final.xml";
+static const char* kDefaultAnnPath = "../resources/model/ann.xml";
+static const char* kChineseAnnPath = "../resources/model/ann_chinese.xml";
 
 typedef enum {
   kForward = 1, // correspond to "has plate"

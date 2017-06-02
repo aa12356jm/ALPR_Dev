@@ -73,8 +73,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <TargetExt>.lib</TargetExt>
-    <IncludePath>D:\softWare\opencv-3.1.0\build\include;$(IncludePath)</IncludePath>
-    <LibraryPath>D:\softWare\opencv-3.1.0\build\x64\vc14\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>D:\softWare\opencv_320_VS2015_x64\build\include;$(IncludePath)</IncludePath>
+    <LibraryPath>D:\softWare\opencv_320_VS2015_x64\build\x64\vc14\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>$(SolutionDir)_build\</OutDir>
@@ -113,7 +113,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Lib>
-      <AdditionalDependencies>opencv_world310d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opencv_world320d.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">

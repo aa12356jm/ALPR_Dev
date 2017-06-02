@@ -54,7 +54,7 @@ void SvmTrain::train() {
 void SvmTrain::test() {
   // 1.4 bug fix: old 1.4 ver there is no null judge
   //if (NULL == svm_)
-    svm_ = cv::ml::SVM::load<cv::ml::SVM>(/*svm_xml_*/"D:/WorkSpace/EasyPR/EasyPR-master/tmp/svm.xml");//加载训练好的模型文件
+    svm_ = cv::ml::SVM::load(/*svm_xml_*/"D:/WorkSpace/EasyPR/EasyPR-master/tmp/svm.xml");//加载训练好的模型文件
 
   if (test_file_list_.empty()) {
     this->prepare();
