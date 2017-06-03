@@ -11,6 +11,7 @@
 //#include "accuracy.hpp"
 //#include "chars.hpp"
 //#include "plate.hpp"
+
 #pragma execution_character_set("utf-8")
 
 class mainWindow : public QMainWindow
@@ -21,30 +22,15 @@ public:
 	mainWindow(QWidget *parent = Q_NULLPTR);
 	QImage cvMat2QImage(const cv::Mat& mat);
 
-	int test_plate_locate();
-	int test_plate_judge();
-	int test_plate_detect();
-	
-	int test_chars_segment();
-	int test_chars_identify();
-	int test_chars_recognise();
-	int test_plate_recognize();
-
 private slots:
-	void pushButton_plate_locate_clicked();
-	void pushButton_plate_judge_clicked();
-	void pushButton_plate_detect_clicked();
-	void pushButton_chars_segment_clicked();
-	void pushButton_chars_identify_clicked();
-	void pushButton_chars_recognise_clicked();
 	void pushButton_plate_recognize_clicked();
-	void pushButton_test_all_clicked();
 
 	void pushButton_open_clicked();
 	
 private:
 	Ui::mainWindowClass ui;
 	QString fileName;
+	vector<Mat> vPlateMat;
 
 	PixItem *pixItem_src;       //自定义的图元类
 	QGraphicsScene *m_graphicsScene_src;  //场景
