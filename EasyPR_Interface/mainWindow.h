@@ -1,10 +1,14 @@
 #pragma once
 
 #include <QtWidgets/QMainWindow>
+#include <QStandardItemModel>
+#include <QFileDialog>
+
+
 #include "ui_mainWindow.h"
 
-#include "easypr.h"
-#include "easypr/util/switch.hpp"
+#include "captureThread.h"
+
 #include "pixitem.h"
 //#include "easypr/core/plate_locate.h"
 
@@ -20,23 +24,38 @@ class mainWindow : public QMainWindow
 
 public:
 	mainWindow(QWidget *parent = Q_NULLPTR);
-	QImage cvMat2QImage(const cv::Mat& mat);
+	
+
+	void closeEvent(QCloseEvent *);
+
+	void changeEvent(QEvent *e);
 
 private slots:
 	void pushButton_plate_recognize_clicked();
 
 	void pushButton_open_clicked();
+	void pushButton_startCapture_clicked();
 	
+	void showImage(QImage img);
+	void showImage(cv::Mat img);
+	void showPlateStr(vector<QString> plateStr);
+	void showResultImage(QImage img);
+	void showCameraStatus();
+
+signals:
+	void start_Singal();
+
 private:
 	Ui::mainWindowClass ui;
 	QString fileName;
-	vector<Mat> vPlateMat;
+	//vector<Mat> vPlateMat;
+	QTimer *m_timer;  //定时器
 
 	PixItem *pixItem_src;       //自定义的图元类
-	QGraphicsScene *m_graphicsScene_src;  //场景
-	QGraphicsView *m_graphicsView_src;
+	QGraphicsScene *m_scene_camera;  //场景
+	captureThread *m_thread_capture;  //相机线程
+	QStandardItemModel *model_result; 
 
-	PixItem *pixItem_dst;       //自定义的图元类
-	QGraphicsScene *m_graphicsScene_dst;  //场景
-	QGraphicsView *m_graphicsView_dst;
+	QLabel *m_label_status;  //状态栏显示信息
+
 };

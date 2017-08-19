@@ -120,7 +120,7 @@ namespace easypr {
   int CPlateDetect::plateDetect(Mat src, std::vector<CPlate> &resultVec, int img_index) 
   {
 	//再调用另外一个函数，多一个bool参数，可以选择是否显示：使用不同定位方法定位出的车牌
-    int result = plateDetect(src, resultVec, m_type, true, img_index);
+    int result = plateDetect(src, resultVec, m_type, false, img_index);
     return result;
   }
 

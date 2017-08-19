@@ -1,11 +1,13 @@
 #include "mainWindow.h"
 #include <QtWidgets/QApplication>
-//#include <QTextCodec>
+#include <QTextCodec>
 int main(int argc, char *argv[])
 {
 	QApplication a(argc, argv);
+
+	QTextCodec::setCodecForLocale(QTextCodec::codecForName("GBK"));
+
 	mainWindow w;
-	/*QTextCodec::setCodecForLocale(QTextCodec::codecForName("GBK"));*/
 	w.show();
 	return a.exec();
 }
