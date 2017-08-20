@@ -6,6 +6,7 @@
 #include "opencv2/opencv.hpp"
 #include "easypr.h"
 #include "easypr/util/switch.hpp"
+#include "alpr.h"
 
 class captureThread : public QThread
 {
@@ -25,13 +26,12 @@ public:
 	bool isQuit() {
 		return quit_status==1;
 	}
+	bool plateRecognize_easyPR(cv::Mat &img, vector<QString> &plateStr_easyPR);
+	static bool plateRecognize_openALPR(cv::Mat &img,vector<QString> &plateStr_openALPR);
 
-
-	bool plateRecognize(cv::Mat &img);
 signals:
-	void captured(int cameraid,QImage img);
-	void captured(QImage img);
-	void capturedStr(vector<QString> plateStr);
+	void captured(int id, QImage img);
+	void capturedStr(int id,vector<QString> plateStr);
 	
 	void captured(cv::Mat img);
 private:
@@ -41,5 +41,6 @@ private:
 	cv::Mat error_image;
 	std::atomic_int quit_status;  //0--running,1--quiting,2--quited
 	cv::VideoCapture capture;//打开摄像头或者视频
-	vector<QString> plateStr;
+	vector<QString> plateStr_easyPR;
+	vector<QString> plateStr_openALPR;
 };

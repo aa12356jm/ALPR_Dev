@@ -45,23 +45,36 @@ void captureThread::run()
 				continue;
 			}
 
-			cv::Mat frame;
-			capture >> frame;
+			cv::Mat frame_easyPR;
+			cv::Mat frame_openALPR;
+			capture >> frame_easyPR;
+			capture >> frame_openALPR;
 
-			if (frame.data == nullptr)
+			//assert(frame_easyPR.data != nullptr);
+			//assert(frame_openALPR.data != nullptr);
+
+			if (frame_openALPR.data == nullptr)
 			{
 				//QMessageBox("没有捕捉到图像");
 				continue;
 			}
 			//plateStr.clear();
 
-			plateRecognize(frame);
+			plateRecognize_easyPR(frame_easyPR, plateStr_easyPR);
 
-			if (0!=plateStr.size())
+			plateRecognize_openALPR(frame_openALPR, plateStr_openALPR);
+
+			if (0!= plateStr_easyPR.size())
 			{
-				emit capturedStr(plateStr);
+				emit capturedStr(0,plateStr_easyPR);
 			}
-			emit captured(cvMat2QImage(frame));
+			if (0!=plateStr_openALPR.size())
+			{
+				emit capturedStr(1,plateStr_openALPR);
+			}
+			emit captured(0,cvMat2QImage(frame_easyPR));
+
+			emit captured(1,cvMat2QImage(frame_openALPR));
 			cv::waitKey(30);
 		}
 	}
@@ -83,9 +96,9 @@ void captureThread::pause()
 	pause_status = true;
 }
 
-bool captureThread::plateRecognize(cv::Mat &img)
+bool captureThread::plateRecognize_easyPR(cv::Mat &img, vector<QString> &plateStr_easyPR)
 {
-		plateStr.clear();
+		plateStr_easyPR.clear();
 		vector<cv::Mat> vPlateMat;
 		vector<cv::RotatedRect> vPlateRotatedRect;
 
@@ -109,8 +122,8 @@ bool captureThread::plateRecognize(cv::Mat &img)
 			for (size_t j = 0; j < num; j++) {		
 				//vPlateMat.push_back(plateVec[j].getPlateMat());
 				vPlateRotatedRect.push_back(plateVec[j].getPlatePos());
-				cv::rectangle(img, vPlateRotatedRect[j].boundingRect(),Scalar(0,0,0),2,8,0);
-				plateStr.push_back(QString::fromStdString(plateVec[j].getPlateStr()));
+				cv::rectangle(img, vPlateRotatedRect[j].boundingRect(),Scalar(0,0,255),5,8,0);
+				plateStr_easyPR.push_back(QString::fromStdString(plateVec[j].getPlateStr()));
 			}
 			//if (0 != vPlateMat.size())
 			//{
@@ -122,6 +135,50 @@ bool captureThread::plateRecognize(cv::Mat &img)
 			//}
 		}
 		return true;
+}
+
+bool captureThread::plateRecognize_openALPR(cv::Mat &srcImg, vector<QString> &plateStr_openALPR)
+{
+	plateStr_openALPR.clear();
+
+	alpr::Alpr openAlpr("us", "openalpr.conf");
+	/*m_openAlpr = new alpr::Alpr("us", "openalpr.conf");*/
+	openAlpr.setTopN(20);
+	openAlpr.setDefaultRegion("md");
+
+	if (openAlpr.isLoaded() == false)
+	{
+		return false;
+	}
+
+	//Mat srcImg = imread("ch-1.jpg");
+
+	alpr::AlprResults results = openAlpr.recognize(srcImg);
+	
+
+	for (int i = 0; i < results.plates.size(); i++)
+	{
+		alpr::AlprPlateResult plate = results.plates[i];
+		cv::Rect rect(plate.plate_points[0].x, plate.plate_points[0].y, plate.plate_points[1].x - plate.plate_points[0].x, plate.plate_points[3].y - plate.plate_points[0].y);
+
+		cv::rectangle(srcImg, rect, Scalar(0, 0, 255),5,8);
+
+
+		//ui.textBrowser->append(QString("一共有%1个结果").arg(plate.topNPlates.size()));
+		for (int k = 0; k < plate.topNPlates.size(); k++)
+		{
+			alpr::AlprPlate candidate = plate.topNPlates[k];
+
+			plateStr_openALPR.push_back(QString("-%1 \t confidence:%2").arg(QString::fromStdString(candidate.characters)).arg(candidate.overall_confidence));
+			plateStr_openALPR.push_back(QString("\t pattern_match:%1").arg(candidate.matches_template));
+
+			//ui.textBrowser->append(QString("-%1 \t confidence:%2").arg(QString::fromStdString(candidate.characters)).arg(candidate.overall_confidence));
+			//ui.textBrowser->append(QString("\t pattern_match:%1").arg(candidate.matches_template));
+			//std::cout << "    - " << candidate.characters << "\t confidence: " << candidate.overall_confidence;
+			//std::cout << "\t pattern_match: " << candidate.matches_template << std::endl;
+		}
+	}
+	return true;
 }
 
 QImage captureThread::cvMat2QImage(const cv::Mat& mat)

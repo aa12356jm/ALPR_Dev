@@ -14,15 +14,20 @@ mainWindow::mainWindow(QWidget *parent)
 	ui.setupUi(this);
 
 
-	//相机显示界面
-	m_scene_camera = new QGraphicsScene(this);
-	ui.graphicsView_camera->setScene(m_scene_camera);
+	/*****************************开始：相机显示界面*****************************/
+	m_scene_easyPR = new QGraphicsScene(this);
+	ui.graphicsView_easyPR->setScene(m_scene_easyPR);
+
+	m_scene_openALPR= new QGraphicsScene(this);
+	ui.graphicsView_openALPR->setScene(m_scene_openALPR);
+	/*****************************结束：相机显示界面*****************************/
+
 
 	/*****************************开始：开启线程启动相机*****************************/
 	m_thread_capture = new captureThread(this);
 	qRegisterMetaType<vector<QString>>("vector<QString>");//Qt多线程间信号槽传递非QObject类型对象的参数时，需要注册此类型，或者connect中使用 Qt::DirectConnection来传递信号槽
-	connect(m_thread_capture, SIGNAL(captured(QImage)), this, SLOT(showImage(QImage)));
-	connect(m_thread_capture, SIGNAL(capturedStr(vector<QString>)), this, SLOT(showPlateStr(vector<QString>)));
+	connect(m_thread_capture, SIGNAL(captured(int,QImage)), this, SLOT(showImage(int,QImage)));
+	connect(m_thread_capture, SIGNAL(capturedStr(int,vector<QString>)), this, SLOT(showPlateStr(int,vector<QString>)));
 	m_thread_capture->start();
 	m_thread_capture->stream();
 	/*****************************结束：开启线程启动相机*****************************/
@@ -158,15 +163,25 @@ void mainWindow::pushButton_startCapture_clicked()
 // 	}
 }
 
-void mainWindow::showImage(QImage img)
+void mainWindow::showImage(int id,QImage img)
 {
 	if (m_thread_capture->isQuit())
 	{
 		return;
 	}
-	auto size = ui.graphicsView_camera->geometry().size();
-	m_scene_camera->addPixmap(QPixmap::fromImage(img).scaled(size));
-	m_scene_camera->setSceneRect(0, 0, size.width(), size.height());
+	if (id==0)
+	{
+		auto size = ui.graphicsView_easyPR->geometry().size();
+		m_scene_easyPR->addPixmap(QPixmap::fromImage(img).scaled(size));
+		m_scene_easyPR->setSceneRect(0, 0, size.width(), size.height());
+	}
+	
+	if (id == 1)
+	{
+		auto size = ui.graphicsView_openALPR->geometry().size();
+		m_scene_openALPR->addPixmap(QPixmap::fromImage(img).scaled(size));
+		m_scene_openALPR->setSceneRect(0, 0, size.width(), size.height());
+	}
 }
 
 void mainWindow::showImage(cv::Mat img)
@@ -175,23 +190,35 @@ void mainWindow::showImage(cv::Mat img)
 	{
 		return;
 	}
-	auto size = ui.graphicsView_camera->geometry().size();
+	auto size = ui.graphicsView_easyPR->geometry().size();
 
-	m_scene_camera->addPixmap(QPixmap::fromImage(m_thread_capture->cvMat2QImage(img)).scaled(size));
-	m_scene_camera->setSceneRect(0, 0, size.width(), size.height());
+	m_scene_easyPR->addPixmap(QPixmap::fromImage(m_thread_capture->cvMat2QImage(img)).scaled(size));
+	m_scene_easyPR->setSceneRect(0, 0, size.width(), size.height());
 }
 
-void mainWindow::showPlateStr(vector<QString> plateStr)
+void mainWindow::showPlateStr(int id,vector<QString> plateStr)
 {
-	ui.textBrowser->clear();
 	if (0==plateStr.size())
 	{
 		return;
 	}
-	for (int i = 0; i < plateStr.size(); i++)
+	if (0==id)
 	{
-		ui.textBrowser->append(plateStr[i].toLocal8Bit());
+		ui.textBrowser_easyPR->clear();
+		for (int i = 0; i < plateStr.size(); i++)
+		{
+			ui.textBrowser_easyPR->append(plateStr[i].toLocal8Bit());
+		}
 	}
+	if (1 == id)
+	{
+		ui.textBrowser_openALPR->clear();
+		for (int i = 0; i < plateStr.size(); i++)
+		{
+			ui.textBrowser_openALPR->append(plateStr[i].toLocal8Bit());
+		}
+	}
+
 }
 
 void mainWindow::showResultImage(QImage img)

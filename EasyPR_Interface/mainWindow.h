@@ -36,9 +36,9 @@ private slots:
 	void pushButton_open_clicked();
 	void pushButton_startCapture_clicked();
 	
-	void showImage(QImage img);
+	void showImage(int id,QImage img);
 	void showImage(cv::Mat img);
-	void showPlateStr(vector<QString> plateStr);
+	void showPlateStr(int id,vector<QString> plateStr);
 	void showResultImage(QImage img);
 	void showCameraStatus();
 
@@ -51,8 +51,13 @@ private:
 	//vector<Mat> vPlateMat;
 	QTimer *m_timer;  //定时器
 
-	PixItem *pixItem_src;       //自定义的图元类
-	QGraphicsScene *m_scene_camera;  //场景
+	//PixItem *pixItem_src;       //自定义的图元类
+	//easyPR 
+	QGraphicsScene *m_scene_easyPR;  //场景
+
+	//openalpr
+	QGraphicsScene *m_scene_openALPR;  //场景
+
 	captureThread *m_thread_capture;  //相机线程
 	QStandardItemModel *model_result; 
 

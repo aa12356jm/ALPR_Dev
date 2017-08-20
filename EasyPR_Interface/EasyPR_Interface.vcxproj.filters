@@ -44,6 +44,9 @@
     <Filter Include="Source Files\EsayPR_test">
       <UniqueIdentifier>{fe9f64bb-399a-4043-89ad-b34bcf3ddc03}</UniqueIdentifier>
     </Filter>
+    <Filter Include="UT">
+      <UniqueIdentifier>{d435ca5b-5a4a-444d-8978-7a02829db626}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="mainWindow.cpp">
@@ -75,6 +78,12 @@
     </ClCompile>
     <ClCompile Include="captureThread.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="openalpr_UT.cpp">
+      <Filter>UT</Filter>
+    </ClCompile>
+    <ClCompile Include="include\Google_UT\gmock-gtest-all.cc">
+      <Filter>UT</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
