@@ -162,10 +162,7 @@ bool captureThread::plateRecognize_openALPR(cv::Mat &srcImg, vector<QString> &pl
 		alpr::AlprPlateResult plate = results.plates[i];
 		cv::Rect rect(plate.plate_points[0].x, plate.plate_points[0].y, plate.plate_points[1].x - plate.plate_points[0].x, plate.plate_points[3].y - plate.plate_points[0].y);
 
-		cv::rectangle(srcImg, rect, Scalar(0, 0, 255),5,8);
-
-
-		//ui.textBrowser->append(QString("一共有%1个结果").arg(plate.topNPlates.size()));
+		//cv::rectangle(srcImg, rect, Scalar(0, 0, 255),5,8);//针对openalpr画出车牌区域，可以通过修改配置文件openalpr.conf中的变量来实现
 		for (int k = 0; k < plate.topNPlates.size(); k++)
 		{
 			alpr::AlprPlate candidate = plate.topNPlates[k];
