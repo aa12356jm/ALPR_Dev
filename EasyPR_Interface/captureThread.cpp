@@ -143,7 +143,7 @@ bool captureThread::plateRecognize_openALPR(cv::Mat &srcImg, vector<QString> &pl
 
 	alpr::Alpr openAlpr("us", "openalpr.conf");
 	/*m_openAlpr = new alpr::Alpr("us", "openalpr.conf");*/
-	openAlpr.setTopN(20);
+	openAlpr.setTopN(5);
 	openAlpr.setDefaultRegion("md");
 
 	if (openAlpr.isLoaded() == false)
