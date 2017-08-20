@@ -61,21 +61,21 @@ mainWindow::mainWindow(QWidget *parent)
 
 
 	/*****************************开始：添加菜单按钮等操作*****************************/
-	QAction *openAction = new QAction(QIcon("icon/open.png"), tr("&打开"), this);
+	QAction *openAction = new QAction(QIcon("icon/open.png"), tr("&%1").arg(QString::fromLocal8Bit("打开")), this);
 	openAction->setShortcuts(QKeySequence::Open);
 	openAction->setStatusTip(tr("Open an image file"));
 	connect(openAction, SIGNAL(triggered()), this, SLOT(pushButton_open_clicked()));
 
-	QMenu *file = menuBar()->addMenu(tr("&文件"));
+	QMenu *file = menuBar()->addMenu(tr("&%1").arg(QString::fromLocal8Bit("文件")));
 	file->addAction(openAction);
 	//QToolBar *toolBar = addToolBar(tr("&File"));
 	ui.mainToolBar->addAction(openAction);
 
-	QAction *startCapture = new QAction(QIcon("icon/start.png"), tr("&开始采集"), this);
+	QAction *startCapture = new QAction(QIcon("icon/start.png"), tr("&%1").arg(QString::fromLocal8Bit("开始采集")), this);
 	startCapture->setStatusTip(tr("Open an camera"));
 	connect(startCapture, SIGNAL(triggered()), this, SLOT(pushButton_startCapture_clicked()));
 
-	file = menuBar()->addMenu(tr("&开始采集"));
+	file = menuBar()->addMenu(tr("&%1").arg(QString::fromLocal8Bit("开始采集")));
 	file->addAction(startCapture);
 	//QToolBar *toolBar = addToolBar(tr("&File"));
 	ui.mainToolBar->addAction(startCapture);
@@ -207,7 +207,7 @@ void mainWindow::showPlateStr(int id,vector<QString> plateStr)
 		ui.textBrowser_easyPR->clear();
 		for (int i = 0; i < plateStr.size(); i++)
 		{
-			ui.textBrowser_easyPR->append(plateStr[i].toLocal8Bit());
+			ui.textBrowser_easyPR->append(plateStr[i]);
 		}
 	}
 	if (1 == id)
@@ -215,7 +215,7 @@ void mainWindow::showPlateStr(int id,vector<QString> plateStr)
 		ui.textBrowser_openALPR->clear();
 		for (int i = 0; i < plateStr.size(); i++)
 		{
-			ui.textBrowser_openALPR->append(plateStr[i].toLocal8Bit());
+			ui.textBrowser_openALPR->append(plateStr[i]);
 		}
 	}
 

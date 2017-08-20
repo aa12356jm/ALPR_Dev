@@ -1,7 +1,6 @@
 #include "captureThread.h"
 #include <QMessageBox>
 
-#pragma execution_character_set("utf-8")
 
 captureThread::captureThread(QObject *parent)
 	: QThread(parent)
@@ -119,11 +118,13 @@ bool captureThread::plateRecognize_easyPR(cv::Mat &img, vector<QString> &plateSt
 		if (result == 0) 
 		{
 			size_t num = plateVec.size();
-			for (size_t j = 0; j < num; j++) {		
+			for (size_t j = 0; j < num; j++) 
+			{		
 				//vPlateMat.push_back(plateVec[j].getPlateMat());
 				vPlateRotatedRect.push_back(plateVec[j].getPlatePos());
 				cv::rectangle(img, vPlateRotatedRect[j].boundingRect(),Scalar(0,0,255),5,8,0);
-				plateStr_easyPR.push_back(QString::fromStdString(plateVec[j].getPlateStr()));
+				std:string strTemp = plateVec[j].getPlateStr();
+				plateStr_easyPR.push_back(QString::fromLocal8Bit(strTemp.c_str()));
 			}
 			//if (0 != vPlateMat.size())
 			//{
@@ -169,7 +170,7 @@ bool captureThread::plateRecognize_openALPR(cv::Mat &srcImg, vector<QString> &pl
 		{
 			alpr::AlprPlate candidate = plate.topNPlates[k];
 
-			plateStr_openALPR.push_back(QString("-%1 \t confidence:%2").arg(QString::fromStdString(candidate.characters)).arg(candidate.overall_confidence));
+			plateStr_openALPR.push_back(QString("-%1 \t confidence:%2").arg(QString::fromLocal8Bit(candidate.characters.c_str())).arg(candidate.overall_confidence));
 			plateStr_openALPR.push_back(QString("\t pattern_match:%1").arg(candidate.matches_template));
 
 			//ui.textBrowser->append(QString("-%1 \t confidence:%2").arg(QString::fromStdString(candidate.characters)).arg(candidate.overall_confidence));
